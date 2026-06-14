@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: ems-user-service-postgres
+    environment:
+      POSTGRES_DB: user_service
+      POSTGRES_USER: user_service
+      POSTGRES_PASSWORD: user_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - user-service-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_service -d user_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: ems-user-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service
+      SPRING_DATASOURCE_USERNAME: user_service
+      SPRING_DATASOURCE_PASSWORD: user_service
+      APP_SECURITY_KEK_BASE64: ${APP_SECURITY_KEK_BASE64:?APP_SECURITY_KEK_BASE64 must be set to a 256-bit Base64 AES key}
+    ports:
+      - "8080:8080"
+
+volumes:
+  user-service-postgres-data:

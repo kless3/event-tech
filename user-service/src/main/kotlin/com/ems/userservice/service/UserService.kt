@@ -1,0 +1,55 @@
+package com.ems.userservice.service
+
+import com.ems.userservice.crypto.CryptoService
+import com.ems.userservice.domain.UserEntity
+import com.ems.userservice.dto.DecryptedKeyResponse
+import com.ems.userservice.dto.UserResponse
+import com.ems.userservice.exception.EmailAlreadyExistsException
+import com.ems.userservice.exception.UserNotFoundException
+import com.ems.userservice.mapper.toResponse
+import com.ems.userservice.repository.UserRepository
+import java.util.UUID
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+@Service
+class UserService(
+    private val userRepository: UserRepository,
+    private val cryptoService: CryptoService,
+) {
+    @Transactional
+    fun createUser(email: String): UserResponse {
+        val normalizedEmail = email.trim().lowercase()
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw EmailAlreadyExistsException(normalizedEmail)
+        }
+
+        val dek = cryptoService.generateDek()
+        val encryptedDek = cryptoService.encryptDek(dek)
+        val user = UserEntity(
+            email = normalizedEmail,
+            encryptedDek = encryptedDek.ciphertextBase64,
+            iv = encryptedDek.ivBase64,
+        )
+
+        return userRepository.save(user).toResponse()
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserDecryptedKey(id: UUID): DecryptedKeyResponse {
+        val user = findUser(id)
+        return DecryptedKeyResponse(
+            userId = user.id,
+            dekBase64 = cryptoService.decryptDekToBase64(user.encryptedDek, user.iv),
+        )
+    }
+
+    @Transactional
+    fun deleteUser(id: UUID) {
+        val user = findUser(id)
+        userRepository.delete(user)
+    }
+
+    private fun findUser(id: UUID): UserEntity =
+        userRepository.findById(id).orElseThrow { UserNotFoundException(id) }
+}
