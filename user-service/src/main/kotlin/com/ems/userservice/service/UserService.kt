@@ -7,6 +7,8 @@ import com.ems.userservice.dto.response.UserResponse
 import com.ems.userservice.exception.EmailAlreadyExistsException
 import com.ems.userservice.exception.UserNotFoundException
 import com.ems.userservice.mapper.toResponse
+import com.ems.userservice.messaging.OutboxEventFactory
+import com.ems.userservice.repository.OutboxEventRepository
 import com.ems.userservice.repository.UserRepository
 import java.util.UUID
 import org.springframework.stereotype.Service
@@ -15,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val outboxEventRepository: OutboxEventRepository,
+    private val outboxEventFactory: OutboxEventFactory,
     private val cryptoService: CryptoService,
 ) {
     @Transactional
@@ -47,6 +51,7 @@ class UserService(
     @Transactional
     fun deleteUser(id: UUID) {
         val user = findUser(id)
+        outboxEventRepository.save(outboxEventFactory.userDeleted(user.id))
         userRepository.delete(user)
     }
 

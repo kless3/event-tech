@@ -8,7 +8,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@EnableConfigurationProperties(SecurityProperties::class)
+@EnableConfigurationProperties(
+    SecurityProperties::class,
+    KafkaTopicsProperties::class,
+    OutboxProperties::class,
+)
 class CryptoConfig {
     @Bean
     fun keyEncryptionKey(properties: SecurityProperties): SecretKey {

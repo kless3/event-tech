@@ -1,4 +1,34 @@
 services:
+  kafka:
+    image: redpandadata/redpanda:v24.3.5
+    container_name: ems-kafka
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - PLAINTEXT://kafka:9092,OUTSIDE://localhost:19092
+    ports:
+      - "19092:19092"
+    volumes:
+      - kafka-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   postgres:
     image: postgres:17-alpine
     container_name: ems-user-service-postgres
@@ -21,6 +51,8 @@ services:
       context: ./user-service
     container_name: ems-user-service
     depends_on:
+      kafka:
+        condition: service_healthy
       postgres:
         condition: service_healthy
     environment:
@@ -28,9 +60,50 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service
       SPRING_DATASOURCE_USERNAME: user_service
       SPRING_DATASOURCE_PASSWORD: user_service
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       APP_SECURITY_KEK_BASE64: ${APP_SECURITY_KEK_BASE64:?APP_SECURITY_KEK_BASE64 must be set to a 256-bit Base64 AES key}
     ports:
       - "8080:8080"
 
+  ticket-postgres:
+    image: postgres:17-alpine
+    container_name: ems-ticket-service-postgres
+    environment:
+      POSTGRES_DB: ticket_service
+      POSTGRES_USER: ticket_service
+      POSTGRES_PASSWORD: ticket_service
+    ports:
+      - "5433:5432"
+    volumes:
+      - ticket-service-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticket_service -d ticket_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ticket-service:
+    build:
+      context: ./ticket-service
+    container_name: ems-ticket-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      ticket-postgres:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ticket-postgres:5432/ticket_service
+      SPRING_DATASOURCE_USERNAME: ticket_service
+      SPRING_DATASOURCE_PASSWORD: ticket_service
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APP_CLIENTS_USER_SERVICE_BASE_URL: http://user-service:8080
+    ports:
+      - "8081:8081"
+
 volumes:
+  kafka-data:
   user-service-postgres-data:
+  ticket-service-postgres-data:

@@ -1,9 +1,12 @@
 package com.ems.userservice.service
 
 import com.ems.userservice.crypto.CryptoService
+import com.ems.userservice.domain.OutboxEvent
 import com.ems.userservice.domain.User
 import com.ems.userservice.exception.EmailAlreadyExistsException
 import com.ems.userservice.exception.UserNotFoundException
+import com.ems.userservice.messaging.OutboxEventFactory
+import com.ems.userservice.repository.OutboxEventRepository
 import com.ems.userservice.repository.UserRepository
 import java.util.Base64
 import java.util.Optional
@@ -19,8 +22,10 @@ import org.mockito.Mockito
 
 class UserServiceTest {
     private val userRepository = Mockito.mock(UserRepository::class.java)
+    private val outboxEventRepository = Mockito.mock(OutboxEventRepository::class.java)
+    private val outboxEventFactory = Mockito.mock(OutboxEventFactory::class.java)
     private val cryptoService = CryptoService(SecretKeySpec(ByteArray(32) { 11 }, "AES"))
-    private val userService = UserService(userRepository, cryptoService)
+    private val userService = UserService(userRepository, outboxEventRepository, outboxEventFactory, cryptoService)
 
     @Test
     fun `creates user with normalized email and encrypted dek`() {
@@ -83,10 +88,20 @@ class UserServiceTest {
             encryptedDek = "encrypted",
             iv = "iv",
         )
+        val outboxEvent = OutboxEvent(
+            aggregateType = "user",
+            aggregateId = userId,
+            eventType = "user.deleted",
+            topic = "ems.user.deleted",
+            messageKey = userId.toString(),
+            payload = "{}",
+        )
         Mockito.`when`(userRepository.findById(userId)).thenReturn(Optional.of(user))
+        Mockito.`when`(outboxEventFactory.userDeleted(userId)).thenReturn(outboxEvent)
 
         userService.deleteUser(userId)
 
+        Mockito.verify(outboxEventRepository).save(outboxEvent)
         Mockito.verify(userRepository).delete(user)
     }
 

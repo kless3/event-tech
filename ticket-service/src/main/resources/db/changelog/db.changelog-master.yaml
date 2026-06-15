@@ -1,10 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: 001-create-users-table
+      id: 001-create-ticket-service-tables
       author: ems
       changes:
         - createTable:
-            tableName: users
+            tableName: tickets
             columns:
               - column:
                   name: id
@@ -13,18 +13,22 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: email
-                  type: varchar(320)
+                  name: user_id
+                  type: uuid
+              - column:
+                  name: event_id
+                  type: uuid
                   constraints:
                     nullable: false
               - column:
-                  name: encrypted_dek
+                  name: encrypted_payload
                   type: varchar
-                  constraints:
-                    nullable: false
               - column:
-                  name: iv
+                  name: payload_iv
                   type: varchar
+              - column:
+                  name: status
+                  type: varchar(32)
                   constraints:
                     nullable: false
               - column:
@@ -37,14 +41,21 @@ databaseChangeLog:
                   type: timestamp
                   constraints:
                     nullable: false
-        - addUniqueConstraint:
-            tableName: users
-            columnNames: email
-            constraintName: uk_users_email
-  - changeSet:
-      id: 002-create-outbox-events-table
-      author: ems
-      changes:
+              - column:
+                  name: gdpr_erased_at
+                  type: timestamp
+        - createIndex:
+            tableName: tickets
+            indexName: idx_tickets_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: tickets
+            indexName: idx_tickets_event_id
+            columns:
+              - column:
+                  name: event_id
         - createTable:
             tableName: outbox_events
             columns:
@@ -113,9 +124,33 @@ databaseChangeLog:
                   type: timestamp
         - createIndex:
             tableName: outbox_events
-            indexName: idx_user_outbox_events_status_created_at
+            indexName: idx_outbox_events_status_created_at
             columns:
               - column:
                   name: status
               - column:
                   name: created_at
+        - createTable:
+            tableName: processed_kafka_messages
+            columns:
+              - column:
+                  name: message_id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: topic
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_key
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed_at
+                  type: timestamp
+                  constraints:
+                    nullable: false

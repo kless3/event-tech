@@ -1,10 +1,10 @@
 spring:
   application:
-    name: user-service
+    name: ticket-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/user_service}
-    username: ${SPRING_DATASOURCE_USERNAME:user_service}
-    password: ${SPRING_DATASOURCE_PASSWORD:user_service}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/ticket_service}
+    username: ${SPRING_DATASOURCE_USERNAME:ticket_service}
+    password: ${SPRING_DATASOURCE_PASSWORD:ticket_service}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -12,19 +12,24 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  sql:
-    init:
-      mode: never
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:ticket-service}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: com.ems.ticketservice.*
+    listener:
+      ack-mode: record
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8081}
 
 management:
   endpoints:
@@ -37,11 +42,15 @@ management:
         enabled: true
 
 app:
-  security:
-    kek-base64: ${APP_SECURITY_KEK_BASE64}
+  clients:
+    user-service:
+      base-url: ${APP_CLIENTS_USER_SERVICE_BASE_URL:http://localhost:8080}
   kafka:
     topics:
       user-deleted: ${APP_KAFKA_TOPICS_USER_DELETED:ems.user.deleted}
+      ticket-created: ${APP_KAFKA_TOPICS_TICKET_CREATED:ems.ticket.created}
+      ticket-gdpr-erased: ${APP_KAFKA_TOPICS_TICKET_GDPR_ERASED:ems.ticket.gdpr-erased}
+      dead-letter-suffix: ${APP_KAFKA_TOPICS_DEAD_LETTER_SUFFIX:.DLT}
   outbox:
     publish-limit: ${APP_OUTBOX_PUBLISH_LIMIT:50}
     max-attempts: ${APP_OUTBOX_MAX_ATTEMPTS:10}
