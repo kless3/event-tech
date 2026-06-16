@@ -5,6 +5,7 @@ import com.ems.ticketservice.crypto.TicketCryptoService
 import com.ems.ticketservice.domain.Ticket
 import com.ems.ticketservice.domain.TicketStatus
 import com.ems.ticketservice.dto.request.CreateTicketRequest
+import com.ems.ticketservice.dto.response.TicketSummaryResponse
 import com.ems.ticketservice.dto.response.TicketResponse
 import com.ems.ticketservice.exception.TicketErasedException
 import com.ems.ticketservice.exception.TicketNotFoundException
@@ -79,6 +80,20 @@ class TicketService(
         val erasedTicketIds = tickets.map { ticket -> ticket.id }
         outboxEventRepository.save(outboxEventFactory.ticketGdprErased(userId, erasedTicketIds))
         return erasedTicketIds
+    }
+
+    @Transactional(readOnly = true)
+    fun getTicketSummary(eventId: UUID): TicketSummaryResponse =
+        TicketSummaryResponse(
+            eventId = eventId,
+            activeTickets = ticketRepository.countByEventIdAndStatus(eventId, TicketStatus.ACTIVE),
+        )
+
+    @Transactional
+    fun cancelActiveTicketsForEvent(eventId: UUID): List<UUID> {
+        val tickets = ticketRepository.findAllByEventIdAndStatus(eventId, TicketStatus.ACTIVE)
+        tickets.forEach(Ticket::cancel)
+        return tickets.map { it.id }
     }
 
     private fun findTicket(id: UUID): Ticket =

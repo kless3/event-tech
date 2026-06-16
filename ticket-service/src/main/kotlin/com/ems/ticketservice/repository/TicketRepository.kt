@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface TicketRepository : JpaRepository<Ticket, UUID> {
     fun findAllByUserIdAndStatus(userId: UUID, status: TicketStatus): List<Ticket>
+    fun findAllByEventIdAndStatus(eventId: UUID, status: TicketStatus): List<Ticket>
+    fun countByEventIdAndStatus(eventId: UUID, status: TicketStatus): Long
 }

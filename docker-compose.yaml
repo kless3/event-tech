@@ -103,7 +103,49 @@ services:
     ports:
       - "8081:8081"
 
+  event-postgres:
+    image: postgres:17-alpine
+    container_name: ems-event-service-postgres
+    environment:
+      POSTGRES_DB: event_service
+      POSTGRES_USER: event_service
+      POSTGRES_PASSWORD: event_service
+    ports:
+      - "5434:5432"
+    volumes:
+      - event-service-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_service -d event_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  event-service:
+    build:
+      context: ./event-service
+    container_name: ems-event-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      event-postgres:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      ticket-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://event-postgres:5432/event_service
+      SPRING_DATASOURCE_USERNAME: event_service
+      SPRING_DATASOURCE_PASSWORD: event_service
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APP_CLIENTS_USER_SERVICE_BASE_URL: http://user-service:8080
+      APP_CLIENTS_TICKET_SERVICE_BASE_URL: http://ticket-service:8081
+    ports:
+      - "8082:8082"
+
 volumes:
   kafka-data:
   user-service-postgres-data:
   ticket-service-postgres-data:
+  event-service-postgres-data:

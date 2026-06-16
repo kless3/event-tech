@@ -20,6 +20,7 @@ class UserDeletedConsumerTest {
     private val kafkaTemplate = Mockito.mock(KafkaTemplate::class.java) as KafkaTemplate<String, String>
     private val topics = KafkaTopicsProperties(
         userDeleted = "ems.user.deleted",
+        eventCancelled = "ems.event.cancelled",
         ticketCreated = "ems.ticket.created",
         ticketGdprErased = "ems.ticket.gdpr-erased",
         deadLetterSuffix = ".DLT",
