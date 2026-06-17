@@ -37,7 +37,7 @@ class OutboxEvent(
     val payload: String,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 32)
+    @Column(nullable = false, length = 32, columnDefinition = "VARCHAR(32)")
     var status: OutboxEventStatus = OutboxEventStatus.PENDING,
 
     @Column(nullable = false)

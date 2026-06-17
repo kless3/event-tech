@@ -54,7 +54,7 @@ jobs:
 
       - name: Build and test ${{ matrix.service }}
         working-directory: ${{ matrix.service }}
-        run: ./gradlew clean test bootJar --no-daemon
+        run: ./gradlew clean test bootJar --no-daemon --stacktrace
 
       - name: Upload test reports
         if: always()

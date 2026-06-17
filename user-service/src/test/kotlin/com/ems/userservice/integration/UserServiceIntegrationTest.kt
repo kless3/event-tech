@@ -106,9 +106,10 @@ class UserServiceIntegrationTest {
         @DynamicPropertySource
         @JvmStatic
         fun registerProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url") { "${postgres.jdbcUrl}?sslmode=disable" }
+            registry.add("spring.datasource.url", postgres::getJdbcUrl)
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
+            registry.add("spring.jpa.database-platform") { "org.hibernate.dialect.PostgreSQLDialect" }
             registry.add("app.security.kek-base64") {
                 Base64.getEncoder().encodeToString(ByteArray(32) { 13 })
             }
