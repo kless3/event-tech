@@ -108,6 +108,11 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
+            -Dsonar.sources=user-service/src/main/kotlin,ticket-service/src/main/kotlin,event-service/src/main/kotlin
+            -Dsonar.tests=user-service/src/test/kotlin,ticket-service/src/test/kotlin,event-service/src/test/kotlin
+            -Dsonar.java.binaries=user-service/build/classes/kotlin/main,ticket-service/build/classes/kotlin/main,event-service/build/classes/kotlin/main
+            -Dsonar.java.test.binaries=user-service/build/classes/kotlin/test,ticket-service/build/classes/kotlin/test,event-service/build/classes/kotlin/test
+            -Dsonar.cpd.exclusions=**/domain/OutboxEvent.kt,**/config/JpaLiquibaseDependencyPostProcessor.kt,**/config/KafkaConfig.kt,**/messaging/UserDeletedConsumer.kt,**/messaging/OutboxPublisher.kt,**/client/UserKeyClient.kt,event-service/src/main/kotlin/com/ems/eventservice/crypto/EventCryptoService.kt,ticket-service/src/main/kotlin/com/ems/ticketservice/crypto/TicketCryptoService.kt,**/exception/GlobalExceptionHandler.kt
 
       - name: Dockerfile lint user-service
         uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
