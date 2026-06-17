@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: api-gateway
+
+server:
+  port: ${SERVER_PORT:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  routes:
+    user-service-base-url: ${APP_ROUTES_USER_SERVICE_BASE_URL:http://localhost:8080}
+    ticket-service-base-url: ${APP_ROUTES_TICKET_SERVICE_BASE_URL:http://localhost:8081}
+    event-service-base-url: ${APP_ROUTES_EVENT_SERVICE_BASE_URL:http://localhost:8082}

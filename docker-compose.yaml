@@ -170,6 +170,25 @@ services:
     ports:
       - "8082:8082"
 
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: ems-api-gateway
+    depends_on:
+      user-service:
+        condition: service_started
+      ticket-service:
+        condition: service_started
+      event-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8083
+      APP_ROUTES_USER_SERVICE_BASE_URL: http://user-service:8080
+      APP_ROUTES_TICKET_SERVICE_BASE_URL: http://ticket-service:8081
+      APP_ROUTES_EVENT_SERVICE_BASE_URL: http://event-service:8082
+    ports:
+      - "8083:8083"
+
 volumes:
   kafka-data:
   user-service-postgres-data:

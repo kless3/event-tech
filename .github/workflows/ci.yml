@@ -32,6 +32,7 @@ jobs:
           - user-service
           - ticket-service
           - event-service
+          - api-gateway
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -96,6 +97,7 @@ jobs:
           ./user-service/gradlew -p user-service compileTestKotlin --no-daemon
           ./ticket-service/gradlew -p ticket-service compileTestKotlin --no-daemon
           ./event-service/gradlew -p event-service compileTestKotlin --no-daemon
+          ./api-gateway/gradlew -p api-gateway compileTestKotlin --no-daemon
 
       - name: Sonar analysis
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' }}
@@ -108,10 +110,10 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
-            -Dsonar.sources=user-service/src/main/kotlin,ticket-service/src/main/kotlin,event-service/src/main/kotlin
-            -Dsonar.tests=user-service/src/test/kotlin,ticket-service/src/test/kotlin,event-service/src/test/kotlin
-            -Dsonar.java.binaries=user-service/build/classes/kotlin/main,ticket-service/build/classes/kotlin/main,event-service/build/classes/kotlin/main
-            -Dsonar.java.test.binaries=user-service/build/classes/kotlin/test,ticket-service/build/classes/kotlin/test,event-service/build/classes/kotlin/test
+            -Dsonar.sources=user-service/src/main/kotlin,ticket-service/src/main/kotlin,event-service/src/main/kotlin,api-gateway/src/main/kotlin
+            -Dsonar.tests=user-service/src/test/kotlin,ticket-service/src/test/kotlin,event-service/src/test/kotlin,api-gateway/src/test/kotlin
+            -Dsonar.java.binaries=user-service/build/classes/kotlin/main,ticket-service/build/classes/kotlin/main,event-service/build/classes/kotlin/main,api-gateway/build/classes/kotlin/main
+            -Dsonar.java.test.binaries=user-service/build/classes/kotlin/test,ticket-service/build/classes/kotlin/test,event-service/build/classes/kotlin/test,api-gateway/build/classes/kotlin/test
 
       - name: Dockerfile lint user-service
         uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
@@ -131,6 +133,12 @@ jobs:
           dockerfile: event-service/Dockerfile
           failure-threshold: warning
 
+      - name: Dockerfile lint api-gateway
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
+        with:
+          dockerfile: api-gateway/Dockerfile
+          failure-threshold: warning
+
   codeql:
     name: CodeQL
     runs-on: ubuntu-latest
@@ -148,6 +156,7 @@ jobs:
           - user-service
           - ticket-service
           - event-service
+          - api-gateway
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -195,6 +204,7 @@ jobs:
           - user-service
           - ticket-service
           - event-service
+          - api-gateway
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
