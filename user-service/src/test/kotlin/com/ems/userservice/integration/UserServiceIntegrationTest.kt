@@ -39,18 +39,27 @@ class UserServiceIntegrationTest {
     }
 
     @Test
-    fun `runs liquibase migration and creates users table`() {
+    fun `runs liquibase migrations and creates required tables`() {
         val changelogRows = jdbcTemplate.queryForObject(
-            "select count(*) from databasechangelog where id = '001-create-users-table'",
+            """
+            select count(*)
+            from databasechangelog
+            where id in ('001-create-users-table', '002-create-outbox-events-table')
+            """.trimIndent(),
             Int::class.java,
         )
         val userTableRows = jdbcTemplate.queryForObject(
             "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'users'",
             Int::class.java,
         )
+        val outboxTableRows = jdbcTemplate.queryForObject(
+            "select count(*) from information_schema.tables where table_schema = 'public' and table_name = 'outbox_events'",
+            Int::class.java,
+        )
 
-        assertEquals(1, changelogRows)
+        assertEquals(2, changelogRows)
         assertEquals(1, userTableRows)
+        assertEquals(1, outboxTableRows)
     }
 
     @Test
@@ -110,6 +119,8 @@ class UserServiceIntegrationTest {
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
             registry.add("spring.jpa.database-platform") { "org.hibernate.dialect.PostgreSQLDialect" }
+            registry.add("spring.liquibase.enabled") { true }
+            registry.add("spring.liquibase.change-log") { "classpath:db/changelog/db.changelog-master.yaml" }
             registry.add("app.security.kek-base64") {
                 Base64.getEncoder().encodeToString(ByteArray(32) { 13 })
             }
