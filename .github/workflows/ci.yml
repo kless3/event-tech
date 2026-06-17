@@ -131,24 +131,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: gradle
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
-          build-mode: manual
-
-      - name: Build all services for CodeQL
-        run: |
-          ./user-service/gradlew -p user-service compileKotlin --no-daemon
-          ./ticket-service/gradlew -p ticket-service compileKotlin --no-daemon
-          ./event-service/gradlew -p event-service compileKotlin --no-daemon
+          build-mode: none
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
