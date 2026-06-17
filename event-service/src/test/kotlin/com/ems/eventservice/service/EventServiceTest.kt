@@ -8,6 +8,7 @@ import com.ems.eventservice.domain.Event
 import com.ems.eventservice.domain.EventStatus
 import com.ems.eventservice.domain.OutboxEvent
 import com.ems.eventservice.dto.request.CreateEventRequest
+import com.ems.eventservice.dto.request.CreateOrganizerEventRequest
 import com.ems.eventservice.dto.response.TicketSummaryResponse
 import com.ems.eventservice.dto.response.UserKeyResponse
 import com.ems.eventservice.exception.EventUnavailableException
@@ -86,6 +87,40 @@ class EventServiceTest {
         val outboxCaptor = ArgumentCaptor.forClass(OutboxEvent::class.java)
         Mockito.verify(outboxEventRepository).save(outboxCaptor.capture())
         assertEquals("event.created", outboxCaptor.value.eventType)
+    }
+
+    @Test
+    fun `creates organizer event using organizer id from route`() {
+        val organizerUserId = UUID.randomUUID()
+        Mockito.`when`(userKeyClient.getUserDek(organizerUserId)).thenReturn(UserKeyResponse(organizerUserId, dekBase64))
+        Mockito.`when`(eventRepository.save(Mockito.any(Event::class.java))).thenAnswer { invocation ->
+            invocation.getArgument<Event>(0)
+        }
+
+        val response = eventService.createOrganizerEvent(
+            organizerUserId,
+            CreateOrganizerEventRequest(
+                title = " Event Summit ",
+                description = " Organizer owned event ",
+                location = " Berlin ",
+                startsAt = LocalDateTime.now().plusDays(20),
+                capacity = 250,
+                organizerNote = " backstage plan ",
+            ),
+        )
+
+        val eventCaptor = ArgumentCaptor.forClass(Event::class.java)
+        Mockito.verify(eventRepository).save(eventCaptor.capture())
+        val savedEvent = eventCaptor.value
+
+        assertEquals(organizerUserId, response.organizerUserId)
+        assertEquals(organizerUserId, savedEvent.organizerUserId)
+        assertEquals("Event Summit", response.title)
+        assertEquals("Berlin", response.location)
+        assertEquals("backstage plan", response.organizerNote)
+        assertNotNull(savedEvent.encryptedOrganizerNote)
+        assertNotNull(savedEvent.organizerNoteIv)
+        Mockito.verify(outboxEventRepository).save(Mockito.any(OutboxEvent::class.java))
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.ems.eventservice.crypto.EventCryptoService
 import com.ems.eventservice.domain.Event
 import com.ems.eventservice.domain.EventStatus
 import com.ems.eventservice.dto.request.CreateEventRequest
+import com.ems.eventservice.dto.request.CreateOrganizerEventRequest
 import com.ems.eventservice.dto.response.EventAvailabilityResponse
 import com.ems.eventservice.dto.response.EventResponse
 import com.ems.eventservice.exception.EventNotFoundException
@@ -32,26 +33,61 @@ class EventService(
     fun createEvent(request: CreateEventRequest): EventResponse {
         val organizerUserId = requireNotNull(request.organizerUserId) { "organizerUserId must not be null" }
         val startsAt = requireNotNull(request.startsAt) { "startsAt must not be null" }
+        return createEvent(
+            organizerUserId = organizerUserId,
+            title = request.title,
+            description = request.description,
+            location = request.location,
+            startsAt = startsAt,
+            capacity = request.capacity,
+            organizerNote = request.organizerNote,
+        )
+    }
+
+    @Transactional
+    fun createOrganizerEvent(organizerUserId: UUID, request: CreateOrganizerEventRequest): EventResponse {
+        val startsAt = requireNotNull(request.startsAt) { "startsAt must not be null" }
+        return createEvent(
+            organizerUserId = organizerUserId,
+            title = request.title,
+            description = request.description,
+            location = request.location,
+            startsAt = startsAt,
+            capacity = request.capacity,
+            organizerNote = request.organizerNote,
+        )
+    }
+
+    private fun createEvent(
+        organizerUserId: UUID,
+        title: String,
+        description: String?,
+        location: String,
+        startsAt: LocalDateTime,
+        capacity: Int,
+        organizerNote: String?,
+    ): EventResponse {
         val userDek = userKeyClient.getUserDek(organizerUserId)
-        val encryptedNote = request.organizerNote
+        val normalizedOrganizerNote = organizerNote
             ?.trim()
             ?.takeIf { it.isNotBlank() }
+        val encryptedNote = normalizedOrganizerNote
             ?.let { eventCryptoService.encrypt(it, userDek.dekBase64) }
 
         val event = eventRepository.save(
             Event(
                 organizerUserId = organizerUserId,
-                title = request.title.trim(),
-                description = request.description?.trim()?.takeIf { it.isNotBlank() },
-                location = request.location.trim(),
+                title = title.trim(),
+                description = description?.trim()?.takeIf { it.isNotBlank() },
+                location = location.trim(),
                 startsAt = startsAt,
-                capacity = request.capacity,
+                capacity = capacity,
                 encryptedOrganizerNote = encryptedNote?.ciphertextBase64,
                 organizerNoteIv = encryptedNote?.ivBase64,
             ),
         )
         outboxEventRepository.save(outboxEventFactory.eventCreated(event))
-        return event.toResponse(request.organizerNote?.trim()?.takeIf { it.isNotBlank() })
+        return event.toResponse(normalizedOrganizerNote)
     }
 
     @Transactional(readOnly = true)
