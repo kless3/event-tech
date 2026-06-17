@@ -115,16 +115,22 @@ class UserServiceIntegrationTest {
         @DynamicPropertySource
         @JvmStatic
         fun registerProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url", postgres::getJdbcUrl)
+            registry.add("spring.datasource.url") { postgres.jdbcUrl.withSslDisabled() }
             registry.add("spring.datasource.username", postgres::getUsername)
             registry.add("spring.datasource.password", postgres::getPassword)
             registry.add("spring.jpa.database-platform") { "org.hibernate.dialect.PostgreSQLDialect" }
             registry.add("spring.jpa.hibernate.ddl-auto") { "none" }
             registry.add("spring.liquibase.enabled") { true }
             registry.add("spring.liquibase.change-log") { "classpath:db/changelog/db.changelog-master.yaml" }
+            registry.add("app.outbox.enabled") { false }
             registry.add("app.security.kek-base64") {
                 Base64.getEncoder().encodeToString(ByteArray(32) { 13 })
             }
+        }
+
+        private fun String.withSslDisabled(): String {
+            val separator = if ("?" in this) "&" else "?"
+            return "$this${separator}sslmode=disable"
         }
     }
 }

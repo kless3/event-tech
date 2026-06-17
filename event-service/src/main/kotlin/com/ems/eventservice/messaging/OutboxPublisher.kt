@@ -7,6 +7,7 @@ import com.ems.eventservice.repository.OutboxEventRepository
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.domain.PageRequest
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.scheduling.annotation.Scheduled
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
+@ConditionalOnProperty(prefix = "app.outbox", name = ["enabled"], havingValue = "true", matchIfMissing = true)
 class OutboxPublisher(
     private val outboxEventRepository: OutboxEventRepository,
     private val kafkaTemplate: KafkaTemplate<String, String>,
