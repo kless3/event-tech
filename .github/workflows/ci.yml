@@ -97,11 +97,17 @@ jobs:
           ./ticket-service/gradlew -p ticket-service compileTestKotlin --no-daemon
           ./event-service/gradlew -p event-service compileTestKotlin --no-daemon
 
-      - name: Sonar analysis placeholder
-        if: ${{ env.SONAR_TOKEN != '' }}
-        run: |
-          echo "Sonar secrets are present."
-          echo "Add Sonar Gradle plugin or sonar-scanner here when project keys are finalized."
+      - name: Sonar analysis
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' }}
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
 
       - name: Dockerfile lint user-service
         uses: hadolint/hadolint-action@v3.3.0
