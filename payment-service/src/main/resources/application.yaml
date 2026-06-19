@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5435/payment_service}
+    username: ${SPRING_DATASOURCE_USERNAME:payment_service}
+    password: ${SPRING_DATASOURCE_PASSWORD:payment_service}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:payment-service}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: ${SERVER_PORT:8084}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  kafka:
+    topics:
+      payment-created: ${APP_KAFKA_TOPICS_PAYMENT_CREATED:ems.payment.created}
+      payment-succeeded: ${APP_KAFKA_TOPICS_PAYMENT_SUCCEEDED:ems.payment.succeeded}
+      payment-failed: ${APP_KAFKA_TOPICS_PAYMENT_FAILED:ems.payment.failed}
+      dead-letter-suffix: ${APP_KAFKA_TOPICS_DEAD_LETTER_SUFFIX:.DLT}
+  outbox:
+    publish-limit: ${APP_OUTBOX_PUBLISH_LIMIT:50}
+    max-attempts: ${APP_OUTBOX_MAX_ATTEMPTS:10}
+  receipts:
+    bucket: ${APP_RECEIPTS_BUCKET:ems-payment-receipts}
+    public-base-url: ${APP_RECEIPTS_PUBLIC_BASE_URL:http://localhost:4566/ems-payment-receipts}
+  s3:
+    endpoint: ${APP_S3_ENDPOINT:http://localhost:4566}
+    region: ${APP_S3_REGION:us-east-1}
+    access-key: ${APP_S3_ACCESS_KEY:test}
+    secret-key: ${APP_S3_SECRET_KEY:test}
+    path-style-access-enabled: ${APP_S3_PATH_STYLE_ACCESS_ENABLED:true}

@@ -20,3 +20,4 @@ app:
     user-service-base-url: ${APP_ROUTES_USER_SERVICE_BASE_URL:http://localhost:8080}
     ticket-service-base-url: ${APP_ROUTES_TICKET_SERVICE_BASE_URL:http://localhost:8081}
     event-service-base-url: ${APP_ROUTES_EVENT_SERVICE_BASE_URL:http://localhost:8082}
+    payment-service-base-url: ${APP_ROUTES_PAYMENT_SERVICE_BASE_URL:http://localhost:8084}

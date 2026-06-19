@@ -24,5 +24,9 @@ class GatewayRoutesConfig(
                 route.path("/api/v1/events/**", "/api/v1/organizers/**")
                     .uri(routesProperties.eventServiceBaseUrl)
             }
+            .route("payment-service") { route ->
+                route.path("/api/v1/payments/**")
+                    .uri(routesProperties.paymentServiceBaseUrl)
+            }
             .build()
 }

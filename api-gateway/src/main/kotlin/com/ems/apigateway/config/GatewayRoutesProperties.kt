@@ -7,4 +7,5 @@ data class GatewayRoutesProperties(
     val userServiceBaseUrl: String,
     val ticketServiceBaseUrl: String,
     val eventServiceBaseUrl: String,
+    val paymentServiceBaseUrl: String,
 )
