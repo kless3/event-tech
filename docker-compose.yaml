@@ -20,6 +20,7 @@ services:
       - --advertise-kafka-addr
       - PLAINTEXT://kafka:9092,OUTSIDE://localhost:19092
     ports:
+    
       - "19092:19092"
     volumes:
       - kafka-data:/var/lib/redpanda/data
