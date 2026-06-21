@@ -33,6 +33,7 @@ jobs:
           - ticket-service
           - event-service
           - payment-service
+          - notification-service
           - api-gateway
     steps:
       - name: Checkout
@@ -99,6 +100,7 @@ jobs:
           ./ticket-service/gradlew -p ticket-service compileTestKotlin --no-daemon
           ./event-service/gradlew -p event-service compileTestKotlin --no-daemon
           ./payment-service/gradlew -p payment-service compileTestKotlin --no-daemon
+          ./notification-service/gradlew -p notification-service compileTestKotlin --no-daemon
           ./api-gateway/gradlew -p api-gateway compileTestKotlin --no-daemon
 
       - name: Sonar analysis
@@ -112,10 +114,10 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
-            -Dsonar.sources=user-service/src/main/kotlin,ticket-service/src/main/kotlin,event-service/src/main/kotlin,payment-service/src/main/kotlin,api-gateway/src/main/kotlin
-            -Dsonar.tests=user-service/src/test/kotlin,ticket-service/src/test/kotlin,event-service/src/test/kotlin,payment-service/src/test/kotlin,api-gateway/src/test/kotlin
-            -Dsonar.java.binaries=user-service/build/classes/kotlin/main,ticket-service/build/classes/kotlin/main,event-service/build/classes/kotlin/main,payment-service/build/classes/kotlin/main,api-gateway/build/classes/kotlin/main
-            -Dsonar.java.test.binaries=user-service/build/classes/kotlin/test,ticket-service/build/classes/kotlin/test,event-service/build/classes/kotlin/test,payment-service/build/classes/kotlin/test,api-gateway/build/classes/kotlin/test
+            -Dsonar.sources=user-service/src/main/kotlin,ticket-service/src/main/kotlin,event-service/src/main/kotlin,payment-service/src/main/kotlin,notification-service/src/main/kotlin,api-gateway/src/main/kotlin
+            -Dsonar.tests=user-service/src/test/kotlin,ticket-service/src/test/kotlin,event-service/src/test/kotlin,payment-service/src/test/kotlin,notification-service/src/test/kotlin,api-gateway/src/test/kotlin
+            -Dsonar.java.binaries=user-service/build/classes/kotlin/main,ticket-service/build/classes/kotlin/main,event-service/build/classes/kotlin/main,payment-service/build/classes/kotlin/main,notification-service/build/classes/kotlin/main,api-gateway/build/classes/kotlin/main
+            -Dsonar.java.test.binaries=user-service/build/classes/kotlin/test,ticket-service/build/classes/kotlin/test,event-service/build/classes/kotlin/test,payment-service/build/classes/kotlin/test,notification-service/build/classes/kotlin/test,api-gateway/build/classes/kotlin/test
 
       - name: Dockerfile lint user-service
         uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
@@ -139,6 +141,12 @@ jobs:
         uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
         with:
           dockerfile: payment-service/Dockerfile
+          failure-threshold: warning
+
+      - name: Dockerfile lint notification-service
+        uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
+        with:
+          dockerfile: notification-service/Dockerfile
           failure-threshold: warning
 
       - name: Dockerfile lint api-gateway
@@ -165,6 +173,7 @@ jobs:
           - ticket-service
           - event-service
           - payment-service
+          - notification-service
           - api-gateway
     steps:
       - name: Checkout
@@ -214,6 +223,7 @@ jobs:
           - ticket-service
           - event-service
           - payment-service
+          - notification-service
           - api-gateway
     steps:
       - name: Checkout

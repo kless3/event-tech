@@ -13,6 +13,7 @@ import org.springframework.cloud.gateway.route.RouteLocator
         "app.routes.ticket-service-base-url=http://tickets",
         "app.routes.event-service-base-url=http://events",
         "app.routes.payment-service-base-url=http://payments",
+        "app.routes.notification-service-base-url=http://notifications",
     ],
 )
 class GatewayRoutesConfigTest {
@@ -24,10 +25,11 @@ class GatewayRoutesConfigTest {
         val routes = routeLocator.routes.collectList().block() ?: emptyList()
         val routeIds = routes.map { route -> route.id }
 
-        assertEquals(4, routes.size)
+        assertEquals(5, routes.size)
         assertContains(routeIds, "user-service")
         assertContains(routeIds, "ticket-service")
         assertContains(routeIds, "event-service")
         assertContains(routeIds, "payment-service")
+        assertContains(routeIds, "notification-service")
     }
 }

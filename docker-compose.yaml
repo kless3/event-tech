@@ -231,6 +231,41 @@ services:
     ports:
       - "8084:8084"
 
+  notification-postgres:
+    image: postgres:17-alpine
+    container_name: ems-notification-service-postgres
+    environment:
+      POSTGRES_DB: notification_service
+      POSTGRES_USER: notification_service
+      POSTGRES_PASSWORD: notification_service
+    ports:
+      - "5436:5432"
+    volumes:
+      - notification-service-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notification_service -d notification_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  notification-service:
+    build:
+      context: ./notification-service
+    container_name: ems-notification-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      notification-postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-postgres:5432/notification_service
+      SPRING_DATASOURCE_USERNAME: notification_service
+      SPRING_DATASOURCE_PASSWORD: notification_service
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8085:8085"
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -244,12 +279,15 @@ services:
         condition: service_started
       payment-service:
         condition: service_started
+      notification-service:
+        condition: service_started
     environment:
       SERVER_PORT: 8083
       APP_ROUTES_USER_SERVICE_BASE_URL: http://user-service:8080
       APP_ROUTES_TICKET_SERVICE_BASE_URL: http://ticket-service:8081
       APP_ROUTES_EVENT_SERVICE_BASE_URL: http://event-service:8082
       APP_ROUTES_PAYMENT_SERVICE_BASE_URL: http://payment-service:8084
+      APP_ROUTES_NOTIFICATION_SERVICE_BASE_URL: http://notification-service:8085
     ports:
       - "8083:8083"
 
@@ -259,5 +297,6 @@ volumes:
   ticket-service-postgres-data:
   event-service-postgres-data:
   payment-service-postgres-data:
+  notification-service-postgres-data:
   redis-data:
   localstack-data:

@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: notification-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5436/notification_service}
+    username: ${SPRING_DATASOURCE_USERNAME:notification_service}
+    password: ${SPRING_DATASOURCE_PASSWORD:notification_service}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:notification-service}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: ${SERVER_PORT:8085}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  kafka:
+    topics:
+      payment-succeeded: ${APP_KAFKA_TOPICS_PAYMENT_SUCCEEDED:ems.payment.succeeded}
+      payment-failed: ${APP_KAFKA_TOPICS_PAYMENT_FAILED:ems.payment.failed}
+      event-cancelled: ${APP_KAFKA_TOPICS_EVENT_CANCELLED:ems.event.cancelled}
+      dead-letter-suffix: ${APP_KAFKA_TOPICS_DEAD_LETTER_SUFFIX:.DLT}

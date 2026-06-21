@@ -28,5 +28,9 @@ class GatewayRoutesConfig(
                 route.path("/api/v1/payments/**")
                     .uri(routesProperties.paymentServiceBaseUrl)
             }
+            .route("notification-service") { route ->
+                route.path("/api/v1/notifications/**")
+                    .uri(routesProperties.notificationServiceBaseUrl)
+            }
             .build()
 }

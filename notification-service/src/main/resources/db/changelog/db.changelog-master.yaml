@@ -1,0 +1,103 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-notification-service-tables
+      author: ems
+      changes:
+        - createTable:
+            tableName: notifications
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: recipient_user_id
+                  type: uuid
+              - column:
+                  name: channel
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_event_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_event_type
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subject
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: body
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: failure_reason
+                  type: varchar(1024)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: timestamp
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_recipient_created_at
+            columns:
+              - column:
+                  name: recipient_user_id
+              - column:
+                  name: created_at
+        - createIndex:
+            tableName: notifications
+            indexName: idx_notifications_status_created_at
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: created_at
+        - createTable:
+            tableName: processed_kafka_messages
+            columns:
+              - column:
+                  name: message_id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: topic
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_key
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed_at
+                  type: timestamp
+                  constraints:
+                    nullable: false

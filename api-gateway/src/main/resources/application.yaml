@@ -21,3 +21,4 @@ app:
     ticket-service-base-url: ${APP_ROUTES_TICKET_SERVICE_BASE_URL:http://localhost:8081}
     event-service-base-url: ${APP_ROUTES_EVENT_SERVICE_BASE_URL:http://localhost:8082}
     payment-service-base-url: ${APP_ROUTES_PAYMENT_SERVICE_BASE_URL:http://localhost:8084}
+    notification-service-base-url: ${APP_ROUTES_NOTIFICATION_SERVICE_BASE_URL:http://localhost:8085}
