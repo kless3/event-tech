@@ -311,6 +311,7 @@ services:
       SPRING_DATASOURCE_USERNAME: importer_service
       SPRING_DATASOURCE_PASSWORD: importer_service
       APP_CLIENTS_EVENT_SERVICE_BASE_URL: http://event-service:8082
+      APP_IMPORT_SCHEDULE_ENABLED: "false"
     ports:
       - "8086:8086"
 

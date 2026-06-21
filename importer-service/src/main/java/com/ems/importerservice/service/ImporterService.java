@@ -3,6 +3,7 @@ package com.ems.importerservice.service;
 import com.ems.importerservice.client.EventServiceClient;
 import com.ems.importerservice.client.ExternalEventClient;
 import com.ems.importerservice.client.ExternalEventClientRegistry;
+import com.ems.importerservice.config.ImportProperties;
 import com.ems.importerservice.domain.EventSource;
 import com.ems.importerservice.domain.ImportedEvent;
 import com.ems.importerservice.dto.CreateEventRequest;
@@ -24,15 +25,21 @@ public class ImporterService {
     private final ImportedEventRepository importedEventRepository;
     private final ExternalEventClientRegistry externalEventClientRegistry;
     private final EventServiceClient eventServiceClient;
+    private final ExternalEventNormalizer externalEventNormalizer;
+    private final ImportProperties importProperties;
 
     public ImporterService(
         ImportedEventRepository importedEventRepository,
         ExternalEventClientRegistry externalEventClientRegistry,
-        EventServiceClient eventServiceClient
+        EventServiceClient eventServiceClient,
+        ExternalEventNormalizer externalEventNormalizer,
+        ImportProperties importProperties
     ) {
         this.importedEventRepository = importedEventRepository;
         this.externalEventClientRegistry = externalEventClientRegistry;
         this.eventServiceClient = eventServiceClient;
+        this.externalEventNormalizer = externalEventNormalizer;
+        this.importProperties = importProperties;
     }
 
     @Transactional
@@ -43,15 +50,16 @@ public class ImporterService {
         int skipped = 0;
         int failed = 0;
 
-        for (ExternalEvent externalEvent : client.fetchEvents(limit)) {
-            if (importedEventRepository.existsBySourceAndExternalId(source, externalEvent.externalId())) {
+        for (ExternalEvent externalEvent : fetchEventsWithRetry(source, client, limit)) {
+            ExternalEvent normalizedEvent = externalEventNormalizer.normalize(externalEvent);
+            if (importedEventRepository.existsBySourceAndExternalId(source, normalizedEvent.externalId())) {
                 skipped++;
                 continue;
             }
 
-            ImportedEvent importedEvent = new ImportedEvent(source, externalEvent.externalId(), externalEvent.title());
+            ImportedEvent importedEvent = new ImportedEvent(source, normalizedEvent.externalId(), normalizedEvent.title());
             try {
-                EventResponse event = eventServiceClient.createEvent(toCreateEventRequest(externalEvent, organizerUserId));
+                EventResponse event = eventServiceClient.createEvent(toCreateEventRequest(normalizedEvent, organizerUserId));
                 importedEvent.markImported(event.id(), LocalDateTime.now());
                 imported++;
             } catch (RuntimeException exception) {
@@ -88,5 +96,34 @@ public class ImporterService {
             externalEvent.capacity(),
             "Imported from " + externalEvent.source() + " externalId=" + externalEvent.externalId()
         );
+    }
+
+    private List<ExternalEvent> fetchEventsWithRetry(EventSource source, ExternalEventClient client, int limit) {
+        ImportProperties.Source sourceProperties = importProperties.source(source);
+        int maxAttempts = Math.max(1, sourceProperties.getRetryAttempts());
+        RuntimeException lastFailure = null;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                return client.fetchEvents(limit);
+            } catch (RuntimeException exception) {
+                lastFailure = exception;
+                sleepBeforeRetry(sourceProperties, attempt, maxAttempts);
+            }
+        }
+
+        throw lastFailure == null ? new IllegalStateException("External import failed") : lastFailure;
+    }
+
+    private void sleepBeforeRetry(ImportProperties.Source sourceProperties, int attempt, int maxAttempts) {
+        if (attempt >= maxAttempts || sourceProperties.getRetryBackoff().isZero()) {
+            return;
+        }
+        try {
+            Thread.sleep(sourceProperties.getRetryBackoff().toMillis());
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("External import retry interrupted", exception);
+        }
     }
 }

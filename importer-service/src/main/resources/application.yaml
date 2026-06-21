@@ -32,3 +32,22 @@ app:
   clients:
     event-service:
       base-url: ${APP_CLIENTS_EVENT_SERVICE_BASE_URL:http://localhost:8082}
+  import:
+    schedule:
+      enabled: ${APP_IMPORT_SCHEDULE_ENABLED:false}
+      organizer-user-id: ${APP_IMPORT_SCHEDULE_ORGANIZER_USER_ID:}
+      limit: ${APP_IMPORT_SCHEDULE_LIMIT:20}
+      fixed-delay: ${APP_IMPORT_SCHEDULE_FIXED_DELAY:PT6H}
+    sources:
+      ticketmaster:
+        enabled: ${APP_IMPORT_SOURCES_TICKETMASTER_ENABLED:true}
+        base-url: ${APP_IMPORT_SOURCES_TICKETMASTER_BASE_URL:}
+        api-key: ${APP_IMPORT_SOURCES_TICKETMASTER_API_KEY:}
+        retry-attempts: ${APP_IMPORT_SOURCES_TICKETMASTER_RETRY_ATTEMPTS:3}
+        retry-backoff: ${APP_IMPORT_SOURCES_TICKETMASTER_RETRY_BACKOFF:250ms}
+      timepad:
+        enabled: ${APP_IMPORT_SOURCES_TIMEPAD_ENABLED:true}
+        base-url: ${APP_IMPORT_SOURCES_TIMEPAD_BASE_URL:}
+        api-key: ${APP_IMPORT_SOURCES_TIMEPAD_API_KEY:}
+        retry-attempts: ${APP_IMPORT_SOURCES_TIMEPAD_RETRY_ATTEMPTS:3}
+        retry-backoff: ${APP_IMPORT_SOURCES_TIMEPAD_RETRY_BACKOFF:250ms}
