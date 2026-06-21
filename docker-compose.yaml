@@ -275,6 +275,7 @@ services:
       SPRING_DATASOURCE_USERNAME: notification_service
       SPRING_DATASOURCE_PASSWORD: notification_service
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APP_DELIVERY_MAX_ATTEMPTS: 3
     ports:
       - "8085:8085"
 

@@ -44,6 +44,9 @@ class Notification(
     @Column(name = "failure_reason", length = 1024)
     var failureReason: String? = null,
 
+    @Column(name = "delivery_attempts", nullable = false)
+    var deliveryAttempts: Int = 0,
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: LocalDateTime? = null,
@@ -55,6 +58,11 @@ class Notification(
     @Column(name = "sent_at")
     var sentAt: LocalDateTime? = null,
 ) {
+    fun markDeliveryAttempt(attempt: Int) {
+        deliveryAttempts = attempt
+        status = NotificationStatus.RETRYING
+    }
+
     fun markSent(sentAt: LocalDateTime) {
         status = NotificationStatus.SENT
         failureReason = null

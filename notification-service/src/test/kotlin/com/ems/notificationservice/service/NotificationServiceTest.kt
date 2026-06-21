@@ -1,5 +1,6 @@
 package com.ems.notificationservice.service
 
+import com.ems.notificationservice.config.NotificationDeliveryProperties
 import com.ems.notificationservice.domain.Notification
 import com.ems.notificationservice.domain.NotificationChannel
 import com.ems.notificationservice.domain.NotificationStatus
@@ -19,7 +20,12 @@ import org.mockito.Mockito
 class NotificationServiceTest {
     private val notificationRepository = Mockito.mock(NotificationRepository::class.java)
     private val notificationSender = RecordingNotificationSender()
-    private val notificationService = NotificationService(notificationRepository, notificationSender)
+    private val notificationService = NotificationService(
+        notificationRepository,
+        notificationSender,
+        NotificationTemplateService(),
+        NotificationDeliveryProperties(maxAttempts = 3),
+    )
 
     @Test
     fun `creates sent notification for successful payment`() {
@@ -34,6 +40,7 @@ class NotificationServiceTest {
         assertEquals(NotificationChannel.EMAIL, response.channel)
         assertEquals(NotificationStatus.SENT, response.status)
         assertEquals("payment.succeeded", response.sourceEventType)
+        assertEquals(1, response.deliveryAttempts)
         assertEquals(response.id, notificationSender.lastNotificationId)
     }
 
@@ -48,6 +55,8 @@ class NotificationServiceTest {
 
         assertEquals(NotificationStatus.FAILED, response.status)
         assertEquals("SMTP unavailable", response.failureReason)
+        assertEquals(3, response.deliveryAttempts)
+        assertEquals(3, notificationSender.deliveryAttempts)
     }
 
     @Test
@@ -61,6 +70,7 @@ class NotificationServiceTest {
         assertNull(response.recipientUserId)
         assertEquals(NotificationChannel.PUSH, response.channel)
         assertEquals(NotificationStatus.SENT, response.status)
+        assertEquals(1, response.deliveryAttempts)
     }
 
     @Test
@@ -138,9 +148,12 @@ class NotificationServiceTest {
     private class RecordingNotificationSender : NotificationSender {
         var lastNotificationId: UUID? = null
             private set
+        var deliveryAttempts: Int = 0
+            private set
         var failure: RuntimeException? = null
 
         override fun send(notification: Notification) {
+            deliveryAttempts++
             failure?.let { throw it }
             lastNotificationId = notification.id
         }

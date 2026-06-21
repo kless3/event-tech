@@ -101,3 +101,17 @@ databaseChangeLog:
                   type: timestamp
                   constraints:
                     nullable: false
+
+  - changeSet:
+      id: 002-add-notification-delivery-attempts
+      author: ems
+      changes:
+        - addColumn:
+            tableName: notifications
+            columns:
+              - column:
+                  name: delivery_attempts
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

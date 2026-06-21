@@ -15,6 +15,7 @@ data class NotificationResponse(
     val subject: String,
     val body: String,
     val failureReason: String?,
+    val deliveryAttempts: Int,
     val createdAt: LocalDateTime?,
     val updatedAt: LocalDateTime?,
     val sentAt: LocalDateTime?,

@@ -1,7 +1,7 @@
 package com.ems.notificationservice.service
 
+import com.ems.notificationservice.config.NotificationDeliveryProperties
 import com.ems.notificationservice.domain.Notification
-import com.ems.notificationservice.domain.NotificationChannel
 import com.ems.notificationservice.dto.event.EventCancelledEvent
 import com.ems.notificationservice.dto.event.PaymentFailedEvent
 import com.ems.notificationservice.dto.event.PaymentSucceededEvent
@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional
 class NotificationService(
     private val notificationRepository: NotificationRepository,
     private val notificationSender: NotificationSender,
+    private val templateService: NotificationTemplateService,
+    private val deliveryProperties: NotificationDeliveryProperties,
 ) {
     @Transactional
     fun notifyPaymentSucceeded(event: PaymentSucceededEvent): NotificationResponse =
@@ -24,8 +26,7 @@ class NotificationService(
             recipientUserId = event.userId,
             sourceEventId = event.eventId,
             sourceEventType = event.eventType,
-            subject = "Payment succeeded",
-            body = "Your payment ${event.paymentId} for ticket ${event.ticketId} was completed. Receipt: ${event.receiptUrl}",
+            message = templateService.paymentSucceeded(event),
         )
 
     @Transactional
@@ -34,8 +35,7 @@ class NotificationService(
             recipientUserId = event.userId,
             sourceEventId = event.eventId,
             sourceEventType = event.eventType,
-            subject = "Payment failed",
-            body = "Your payment ${event.paymentId} for ticket ${event.ticketId} failed: ${event.reason}",
+            message = templateService.paymentFailed(event),
         )
 
     @Transactional
@@ -44,9 +44,7 @@ class NotificationService(
             recipientUserId = null,
             sourceEventId = event.eventId,
             sourceEventType = event.eventType,
-            subject = "Event cancelled",
-            body = "Event ${event.cancelledEventId} was cancelled: ${event.reason}",
-            channel = NotificationChannel.PUSH,
+            message = templateService.eventCancelled(event),
         )
 
     @Transactional(readOnly = true)
@@ -63,28 +61,36 @@ class NotificationService(
         recipientUserId: UUID?,
         sourceEventId: UUID,
         sourceEventType: String,
-        subject: String,
-        body: String,
-        channel: NotificationChannel = NotificationChannel.EMAIL,
+        message: NotificationMessage,
     ): NotificationResponse {
         val notification = notificationRepository.save(
             Notification(
                 recipientUserId = recipientUserId,
-                channel = channel,
+                channel = message.channel,
                 sourceEventId = sourceEventId,
                 sourceEventType = sourceEventType,
-                subject = subject,
-                body = body,
+                subject = message.subject,
+                body = message.body,
             ),
         )
 
-        try {
-            notificationSender.send(notification)
-            notification.markSent(LocalDateTime.now())
-        } catch (exception: Exception) {
-            notification.markFailed(exception.message ?: "Notification delivery failed")
-        }
+        sendWithRetry(notification)
 
         return notification.toResponse()
+    }
+
+    private fun sendWithRetry(notification: Notification) {
+        var lastFailure: Exception? = null
+        for (attempt in 1..deliveryProperties.maxAttempts.coerceAtLeast(1)) {
+            notification.markDeliveryAttempt(attempt)
+            try {
+                notificationSender.send(notification)
+                notification.markSent(LocalDateTime.now())
+                return
+            } catch (exception: Exception) {
+                lastFailure = exception
+            }
+        }
+        notification.markFailed(lastFailure?.message ?: "Notification delivery failed")
     }
 }

@@ -40,6 +40,8 @@ management:
         enabled: true
 
 app:
+  delivery:
+    max-attempts: ${APP_DELIVERY_MAX_ATTEMPTS:3}
   kafka:
     topics:
       payment-succeeded: ${APP_KAFKA_TOPICS_PAYMENT_SUCCEEDED:ems.payment.succeeded}

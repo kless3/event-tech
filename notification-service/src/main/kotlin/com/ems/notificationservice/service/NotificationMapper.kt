@@ -14,6 +14,7 @@ fun Notification.toResponse(): NotificationResponse =
         subject = subject,
         body = body,
         failureReason = failureReason,
+        deliveryAttempts = deliveryAttempts,
         createdAt = createdAt,
         updatedAt = updatedAt,
         sentAt = sentAt,
