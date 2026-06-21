@@ -4,6 +4,7 @@ import com.ems.ticketservice.dto.response.UserKeyResponse
 import com.ems.ticketservice.exception.UserKeyNotFoundException
 import com.ems.ticketservice.exception.UserServiceUnavailableException
 import java.util.UUID
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
@@ -16,6 +17,7 @@ fun interface UserKeyClient {
 
 @Component
 class HttpUserKeyClient(
+    @Qualifier("userServiceRestClient")
     private val userServiceRestClient: RestClient,
 ) : UserKeyClient {
     override fun getUserDek(userId: UUID): UserKeyResponse =

@@ -61,6 +61,7 @@ app:
     topics:
       user-deleted: ${APP_KAFKA_TOPICS_USER_DELETED:ems.user.deleted}
       ticket-created: ${APP_KAFKA_TOPICS_TICKET_CREATED:ems.ticket.created}
+      payment-failed: ${APP_KAFKA_TOPICS_PAYMENT_FAILED:ems.payment.failed}
       event-created: ${APP_KAFKA_TOPICS_EVENT_CREATED:ems.event.created}
       event-cancelled: ${APP_KAFKA_TOPICS_EVENT_CANCELLED:ems.event.cancelled}
       dead-letter-suffix: ${APP_KAFKA_TOPICS_DEAD_LETTER_SUFFIX:.DLT}

@@ -11,4 +11,5 @@ interface TicketRepository : JpaRepository<Ticket, UUID> {
     fun findAllByEventIdAndStatus(eventId: UUID, status: TicketStatus): List<Ticket>
     fun findAllByEventIdAndStatusIn(eventId: UUID, statuses: Collection<TicketStatus>): List<Ticket>
     fun countByEventIdAndStatus(eventId: UUID, status: TicketStatus): Long
+    fun countByEventIdAndStatusIn(eventId: UUID, statuses: Collection<TicketStatus>): Long
 }

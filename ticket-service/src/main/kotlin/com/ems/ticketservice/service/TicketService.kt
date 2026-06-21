@@ -1,6 +1,7 @@
 package com.ems.ticketservice.service
 
 import com.ems.ticketservice.client.UserKeyClient
+import com.ems.ticketservice.client.EventAvailabilityClient
 import com.ems.ticketservice.config.CacheNames
 import com.ems.ticketservice.crypto.TicketCryptoService
 import com.ems.ticketservice.domain.Ticket
@@ -32,6 +33,7 @@ class TicketService(
     private val outboxEventFactory: OutboxEventFactory,
     private val objectMapper: ObjectMapper,
     private val cacheManager: CacheManager,
+    private val eventAvailabilityClient: EventAvailabilityClient,
 ) {
     @Transactional
     fun createTicket(request: CreateTicketRequest): TicketResponse {
@@ -39,6 +41,7 @@ class TicketService(
         val eventId = requireNotNull(request.eventId) { "eventId must not be null" }
         val amount = requireNotNull(request.amount) { "amount must not be null" }.setScale(2, RoundingMode.HALF_UP)
         val currency = request.currency.trim().uppercase()
+        eventAvailabilityClient.ensureEventCanReserveTicket(eventId)
         val userDek = userKeyClient.getUserDek(userId)
         val payload = TicketPayload(
             holderName = request.holderName.trim(),
@@ -98,6 +101,7 @@ class TicketService(
         TicketSummaryResponse(
             eventId = eventId,
             activeTickets = ticketRepository.countByEventIdAndStatus(eventId, TicketStatus.ACTIVE),
+            reservedTickets = ticketRepository.countByEventIdAndStatusIn(eventId, RESERVED_TICKET_STATUSES),
         )
 
     @Transactional
@@ -162,6 +166,10 @@ class TicketService(
             TicketStatus.PAYMENT_FAILED,
         )
         val EVENT_CANCELLABLE_TICKET_STATUSES = listOf(
+            TicketStatus.PENDING_PAYMENT,
+            TicketStatus.ACTIVE,
+        )
+        val RESERVED_TICKET_STATUSES = listOf(
             TicketStatus.PENDING_PAYMENT,
             TicketStatus.ACTIVE,
         )

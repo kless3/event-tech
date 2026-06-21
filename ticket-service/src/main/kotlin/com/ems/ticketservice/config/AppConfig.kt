@@ -8,6 +8,7 @@ import org.springframework.web.client.RestClient
 @Configuration
 @EnableConfigurationProperties(
     UserServiceClientProperties::class,
+    EventServiceClientProperties::class,
     KafkaTopicsProperties::class,
     OutboxProperties::class,
 )
@@ -16,6 +17,14 @@ class AppConfig {
     fun userServiceRestClient(
         builder: RestClient.Builder,
         properties: UserServiceClientProperties,
+    ): RestClient = builder
+        .baseUrl(properties.baseUrl)
+        .build()
+
+    @Bean
+    fun eventServiceRestClient(
+        builder: RestClient.Builder,
+        properties: EventServiceClientProperties,
     ): RestClient = builder
         .baseUrl(properties.baseUrl)
         .build()

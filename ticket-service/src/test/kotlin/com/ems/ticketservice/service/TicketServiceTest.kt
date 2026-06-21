@@ -1,5 +1,6 @@
 package com.ems.ticketservice.service
 
+import com.ems.ticketservice.client.EventAvailabilityClient
 import com.ems.ticketservice.client.UserKeyClient
 import com.ems.ticketservice.config.KafkaTopicsProperties
 import com.ems.ticketservice.crypto.TicketCryptoService
@@ -31,6 +32,7 @@ class TicketServiceTest {
     private val ticketRepository = Mockito.mock(TicketRepository::class.java)
     private val outboxEventRepository = Mockito.mock(OutboxEventRepository::class.java)
     private val userKeyClient = Mockito.mock(UserKeyClient::class.java)
+    private val eventAvailabilityClient = Mockito.mock(EventAvailabilityClient::class.java)
     private val cacheManager = Mockito.mock(CacheManager::class.java)
     private val objectMapper: ObjectMapper = jacksonMapperBuilder().build()
     private val outboxEventFactory = OutboxEventFactory(
@@ -54,6 +56,7 @@ class TicketServiceTest {
         outboxEventFactory = outboxEventFactory,
         objectMapper = objectMapper,
         cacheManager = cacheManager,
+        eventAvailabilityClient = eventAvailabilityClient,
     )
 
     private val dekBase64 = Base64.getEncoder().encodeToString(ByteArray(32) { 9 })
@@ -92,6 +95,7 @@ class TicketServiceTest {
         assertEquals(12, Base64.getDecoder().decode(savedTicket.payloadIv).size)
         val outboxCaptor = ArgumentCaptor.forClass(OutboxEvent::class.java)
         Mockito.verify(outboxEventRepository).save(outboxCaptor.capture())
+        Mockito.verify(eventAvailabilityClient).ensureEventCanReserveTicket(eventId)
         assertEquals("ticket.created", outboxCaptor.value.eventType)
         assertEquals("ems.ticket.created", outboxCaptor.value.topic)
         assertEquals(true, outboxCaptor.value.payload.contains("\"amount\":49.90"))
@@ -175,6 +179,23 @@ class TicketServiceTest {
 
         assertEquals(TicketStatus.PAYMENT_FAILED, ticket.status)
         assertEquals(paymentId, ticket.paymentId)
+    }
+
+    @Test
+    fun `ticket summary counts active and pending reservations`() {
+        val eventId = UUID.randomUUID()
+        Mockito.`when`(ticketRepository.countByEventIdAndStatus(eventId, TicketStatus.ACTIVE)).thenReturn(3)
+        Mockito.`when`(
+            ticketRepository.countByEventIdAndStatusIn(
+                eventId,
+                listOf(TicketStatus.PENDING_PAYMENT, TicketStatus.ACTIVE),
+            ),
+        ).thenReturn(5)
+
+        val response = ticketService.getTicketSummary(eventId)
+
+        assertEquals(3, response.activeTickets)
+        assertEquals(5, response.reservedTickets)
     }
 
     private fun encryptedTicket(userId: UUID, payload: TicketPayload): Ticket {

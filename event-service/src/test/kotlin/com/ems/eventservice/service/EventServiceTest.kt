@@ -42,6 +42,7 @@ class EventServiceTest {
         topics = KafkaTopicsProperties(
             userDeleted = "ems.user.deleted",
             ticketCreated = "ems.ticket.created",
+            paymentFailed = "ems.payment.failed",
             eventCreated = "ems.event.created",
             eventCancelled = "ems.event.cancelled",
             deadLetterSuffix = ".DLT",
@@ -130,13 +131,14 @@ class EventServiceTest {
     fun `returns availability from ticket service summary`() {
         val event = event(capacity = 10)
         Mockito.`when`(eventRepository.findById(event.id)).thenReturn(Optional.of(event))
-        Mockito.`when`(ticketSummaryClient.getTicketSummary(event.id)).thenReturn(TicketSummaryResponse(event.id, 4))
+        Mockito.`when`(ticketSummaryClient.getTicketSummary(event.id)).thenReturn(TicketSummaryResponse(event.id, 3, 4))
 
         val response = eventService.getAvailability(event.id)
 
         assertEquals(10, response.capacity)
-        assertEquals(4, response.activeTickets)
-        assertEquals(6, response.remainingCapacity)
+        assertEquals(3L, response.activeTickets)
+        assertEquals(4L, response.reservedTickets)
+        assertEquals(6L, response.remainingCapacity)
     }
 
     @Test
@@ -157,6 +159,16 @@ class EventServiceTest {
         assertFailsWith<EventUnavailableException> {
             eventService.registerTicketCreated(event.id)
         }
+    }
+
+    @Test
+    fun `releases ticket reservation after payment failed`() {
+        val event = event(capacity = 2).apply { ticketsSold = 1 }
+        Mockito.`when`(eventRepository.findById(event.id)).thenReturn(Optional.of(event))
+
+        eventService.releaseTicketReservation(event.id)
+
+        assertEquals(0, event.ticketsSold)
     }
 
     @Test

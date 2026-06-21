@@ -67,6 +67,12 @@ class Event(
         ticketsSold += 1
     }
 
+    fun releaseTicketReservation() {
+        if (ticketsSold > 0) {
+            ticketsSold -= 1
+        }
+    }
+
     fun cancel(cancelledAt: LocalDateTime) {
         status = EventStatus.CANCELLED
         this.cancelledAt = cancelledAt

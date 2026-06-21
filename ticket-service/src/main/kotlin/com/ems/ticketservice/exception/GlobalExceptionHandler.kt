@@ -27,6 +27,10 @@ class GlobalExceptionHandler {
     fun handleUserKeyNotFound(exception: UserKeyNotFoundException, request: HttpServletRequest): ProblemDetail =
         problemDetail(HttpStatus.UNPROCESSABLE_ENTITY, "User key not found", exception.message ?: "User key was not found", request)
 
+    @ExceptionHandler(EventUnavailableException::class)
+    fun handleEventUnavailable(exception: EventUnavailableException, request: HttpServletRequest): ProblemDetail =
+        problemDetail(HttpStatus.CONFLICT, "Event unavailable", exception.message ?: "Event cannot reserve a ticket", request)
+
     @ExceptionHandler(UserServiceUnavailableException::class)
     fun handleUserServiceUnavailable(
         exception: UserServiceUnavailableException,
@@ -34,6 +38,15 @@ class GlobalExceptionHandler {
     ): ProblemDetail {
         log.warn("User Service interaction failed", exception)
         return problemDetail(HttpStatus.BAD_GATEWAY, "User Service unavailable", "Unable to retrieve user key", request)
+    }
+
+    @ExceptionHandler(EventServiceUnavailableException::class)
+    fun handleEventServiceUnavailable(
+        exception: EventServiceUnavailableException,
+        request: HttpServletRequest,
+    ): ProblemDetail {
+        log.warn("Event Service interaction failed", exception)
+        return problemDetail(HttpStatus.BAD_GATEWAY, "Event Service unavailable", "Unable to verify event availability", request)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)

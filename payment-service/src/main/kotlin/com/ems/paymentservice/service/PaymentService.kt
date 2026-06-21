@@ -4,8 +4,10 @@ import com.ems.paymentservice.domain.Payment
 import com.ems.paymentservice.domain.PaymentStatus
 import com.ems.paymentservice.dto.event.TicketCreatedEvent
 import com.ems.paymentservice.dto.request.CreatePaymentRequest
+import com.ems.paymentservice.dto.response.PaymentReceiptResponse
 import com.ems.paymentservice.dto.response.PaymentResponse
 import com.ems.paymentservice.exception.PaymentNotFoundException
+import com.ems.paymentservice.exception.PaymentReceiptUnavailableException
 import com.ems.paymentservice.exception.PaymentStateException
 import com.ems.paymentservice.mapper.toResponse
 import com.ems.paymentservice.messaging.OutboxEventFactory
@@ -36,9 +38,15 @@ class PaymentService(
             return existingPayment.toResponse()
         }
 
+        val ticketId = requireNotNull(request.ticketId) { "ticketId must not be null" }
+        val existingTicketPayment = paymentRepository.findByTicketId(ticketId).orElse(null)
+        if (existingTicketPayment != null) {
+            return existingTicketPayment.toResponse()
+        }
+
         val payment = paymentRepository.save(
             Payment(
-                ticketId = requireNotNull(request.ticketId) { "ticketId must not be null" },
+                ticketId = ticketId,
                 userId = requireNotNull(request.userId) { "userId must not be null" },
                 eventId = requireNotNull(request.eventId) { "eventId must not be null" },
                 amount = requireNotNull(request.amount) { "amount must not be null" }.setScale(2, RoundingMode.HALF_UP),
@@ -72,6 +80,21 @@ class PaymentService(
         paymentRepository.findByTicketId(ticketId)
             .orElseThrow { PaymentNotFoundException(ticketId) }
             .toResponse()
+
+    @Transactional(readOnly = true)
+    fun getReceipt(id: UUID): PaymentReceiptResponse {
+        val payment = findPayment(id)
+        val receiptObjectKey = payment.receiptObjectKey ?: throw PaymentReceiptUnavailableException(id)
+        val receiptUrl = payment.receiptUrl ?: throw PaymentReceiptUnavailableException(id)
+        val paidAt = payment.paidAt ?: throw PaymentReceiptUnavailableException(id)
+        return PaymentReceiptResponse(
+            paymentId = payment.id,
+            ticketId = payment.ticketId,
+            receiptObjectKey = receiptObjectKey,
+            receiptUrl = receiptUrl,
+            paidAt = paidAt,
+        )
+    }
 
     @Transactional
     fun capturePayment(id: UUID): PaymentResponse {

@@ -19,7 +19,7 @@ class Payment(
     @Column(nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "ticket_id", nullable = false, updatable = false)
+    @Column(name = "ticket_id", nullable = false, updatable = false, unique = true)
     val ticketId: UUID,
 
     @Column(name = "user_id", nullable = false, updatable = false)

@@ -139,6 +139,7 @@ services:
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       APP_CLIENTS_USER_SERVICE_BASE_URL: http://user-service:8080
+      APP_CLIENTS_EVENT_SERVICE_BASE_URL: http://event-service:8082
     ports:
       - "8081:8081"
 

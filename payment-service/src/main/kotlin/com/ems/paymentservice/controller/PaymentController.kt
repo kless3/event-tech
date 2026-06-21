@@ -2,6 +2,7 @@ package com.ems.paymentservice.controller
 
 import com.ems.paymentservice.dto.request.CreatePaymentRequest
 import com.ems.paymentservice.dto.request.FailPaymentRequest
+import com.ems.paymentservice.dto.response.PaymentReceiptResponse
 import com.ems.paymentservice.dto.response.PaymentResponse
 import com.ems.paymentservice.service.PaymentService
 import jakarta.validation.Valid
@@ -36,6 +37,10 @@ class PaymentController(
     @GetMapping("/by-ticket/{ticketId}")
     suspend fun getPaymentByTicketId(@PathVariable ticketId: UUID): PaymentResponse =
         blockingEndpoint { paymentService.getPaymentByTicketId(ticketId) }
+
+    @GetMapping("/{id}/receipt")
+    suspend fun getReceipt(@PathVariable id: UUID): PaymentReceiptResponse =
+        blockingEndpoint { paymentService.getReceipt(id) }
 
     @PostMapping("/{id}/capture")
     suspend fun capturePayment(@PathVariable id: UUID): PaymentResponse =

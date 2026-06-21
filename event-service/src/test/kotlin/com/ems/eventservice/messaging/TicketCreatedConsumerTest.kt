@@ -65,6 +65,7 @@ class TicketCreatedConsumerTest {
 private fun topics() = KafkaTopicsProperties(
     userDeleted = "ems.user.deleted",
     ticketCreated = "ems.ticket.created",
+    paymentFailed = "ems.payment.failed",
     eventCreated = "ems.event.created",
     eventCancelled = "ems.event.cancelled",
     deadLetterSuffix = ".DLT",

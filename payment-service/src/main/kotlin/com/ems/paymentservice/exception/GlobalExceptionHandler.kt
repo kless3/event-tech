@@ -23,6 +23,13 @@ class GlobalExceptionHandler {
     fun handlePaymentState(exception: PaymentStateException, request: HttpServletRequest): ProblemDetail =
         problemDetail(HttpStatus.CONFLICT, "Invalid payment state", exception.message ?: "Payment state is invalid", request)
 
+    @ExceptionHandler(PaymentReceiptUnavailableException::class)
+    fun handlePaymentReceiptUnavailable(
+        exception: PaymentReceiptUnavailableException,
+        request: HttpServletRequest,
+    ): ProblemDetail =
+        problemDetail(HttpStatus.CONFLICT, "Receipt unavailable", exception.message ?: "Payment receipt is not available", request)
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(exception: MethodArgumentNotValidException, request: HttpServletRequest): ProblemDetail {
         val errors = exception.bindingResult.fieldErrors.associate { fieldError ->

@@ -110,7 +110,8 @@ class EventService(
             capacity = event.capacity,
             ticketsSold = event.ticketsSold,
             activeTickets = summary.activeTickets,
-            remainingCapacity = (event.capacity - summary.activeTickets).coerceAtLeast(0),
+            reservedTickets = summary.reservedTickets,
+            remainingCapacity = (event.capacity - summary.reservedTickets).coerceAtLeast(0),
         )
     }
 
@@ -136,6 +137,13 @@ class EventService(
             throw EventUnavailableException(event.id)
         }
         event.incrementTicketsSold()
+        evictEventAvailability(event.id)
+    }
+
+    @Transactional
+    fun releaseTicketReservation(eventId: UUID) {
+        val event = findEvent(eventId)
+        event.releaseTicketReservation()
         evictEventAvailability(event.id)
     }
 

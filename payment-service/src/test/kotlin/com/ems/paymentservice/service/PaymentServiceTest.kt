@@ -52,6 +52,7 @@ class PaymentServiceTest {
     fun `creates pending payment and outbox event`() {
         val request = createRequest()
         Mockito.`when`(paymentRepository.findByIdempotencyKey(request.idempotencyKey)).thenReturn(Optional.empty())
+        Mockito.`when`(paymentRepository.findByTicketId(requireNotNull(request.ticketId))).thenReturn(Optional.empty())
         Mockito.`when`(paymentRepository.save(Mockito.any(Payment::class.java))).thenAnswer { invocation ->
             invocation.getArgument<Payment>(0)
         }
@@ -96,6 +97,7 @@ class PaymentServiceTest {
             occurredAt = Instant.now(),
         )
         Mockito.`when`(paymentRepository.findByIdempotencyKey("ticket:${event.ticketId}")).thenReturn(Optional.empty())
+        Mockito.`when`(paymentRepository.findByTicketId(event.ticketId)).thenReturn(Optional.empty())
         Mockito.`when`(paymentRepository.save(Mockito.any(Payment::class.java))).thenAnswer { invocation ->
             invocation.getArgument<Payment>(0)
         }
@@ -105,6 +107,20 @@ class PaymentServiceTest {
         assertEquals(event.ticketId, response.ticketId)
         assertEquals(PaymentStatus.PENDING, response.status)
         Mockito.verify(outboxEventRepository).save(Mockito.any(OutboxEvent::class.java))
+    }
+
+    @Test
+    fun `returns existing payment for the same ticket`() {
+        val request = createRequest()
+        val existingPayment = paymentFrom(request)
+        Mockito.`when`(paymentRepository.findByIdempotencyKey(request.idempotencyKey)).thenReturn(Optional.empty())
+        Mockito.`when`(paymentRepository.findByTicketId(requireNotNull(request.ticketId))).thenReturn(Optional.of(existingPayment))
+
+        val response = paymentService.createPayment(request)
+
+        assertEquals(existingPayment.id, response.id)
+        Mockito.verify(paymentRepository, Mockito.never()).save(Mockito.any(Payment::class.java))
+        Mockito.verify(outboxEventRepository, Mockito.never()).save(Mockito.any(OutboxEvent::class.java))
     }
 
     @Test
@@ -135,6 +151,21 @@ class PaymentServiceTest {
         Mockito.verify(outboxEventRepository).save(outboxCaptor.capture())
         assertEquals("payment.succeeded", outboxCaptor.value.eventType)
         assertEquals("ems.payment.succeeded", outboxCaptor.value.topic)
+    }
+
+    @Test
+    fun `returns receipt metadata for succeeded payment`() {
+        val payment = paymentFrom(createRequest())
+        Mockito.`when`(paymentRepository.findById(payment.id)).thenReturn(Optional.of(payment))
+        paymentService.capturePayment(payment.id)
+
+        val response = paymentService.getReceipt(payment.id)
+
+        assertEquals(payment.id, response.paymentId)
+        assertEquals(payment.ticketId, response.ticketId)
+        assertEquals("receipts/${payment.id}.pdf", response.receiptObjectKey)
+        assertNotNull(response.receiptUrl)
+        assertNotNull(response.paidAt)
     }
 
     @Test

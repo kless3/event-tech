@@ -6,4 +6,5 @@ import java.util.UUID
 data class TicketSummaryResponse(
     val eventId: UUID,
     val activeTickets: Long,
+    val reservedTickets: Long,
 ) : Serializable

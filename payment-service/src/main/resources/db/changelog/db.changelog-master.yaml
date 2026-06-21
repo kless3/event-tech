@@ -73,6 +73,10 @@ databaseChangeLog:
             tableName: payments
             columnNames: idempotency_key
             constraintName: uk_payments_idempotency_key
+        - addUniqueConstraint:
+            tableName: payments
+            columnNames: ticket_id
+            constraintName: uk_payments_ticket_id
         - createIndex:
             tableName: payments
             indexName: idx_payments_ticket_id
