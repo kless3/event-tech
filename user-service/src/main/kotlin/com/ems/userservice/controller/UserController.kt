@@ -22,20 +22,22 @@ class UserController(
     private val userService: UserService,
 ) {
     @PostMapping
-    fun createUser(@Valid @RequestBody request: CreateUserRequest): ResponseEntity<UserResponse> {
-        val response = userService.createUser(request.email)
-        return ResponseEntity
-            .created(URI.create("/api/v1/users/${response.id}"))
-            .body(response)
-    }
+    suspend fun createUser(@Valid @RequestBody request: CreateUserRequest): ResponseEntity<UserResponse> =
+        blockingEndpoint {
+            val response = userService.createUser(request.email)
+            ResponseEntity
+                .created(URI.create("/api/v1/users/${response.id}"))
+                .body(response)
+        }
 
     @GetMapping("/{id}/decrypt-key")
-    fun getUserDecryptedKey(@PathVariable id: UUID): DecryptedKeyResponse =
-        userService.getUserDecryptedKey(id)
+    suspend fun getUserDecryptedKey(@PathVariable id: UUID): DecryptedKeyResponse =
+        blockingEndpoint { userService.getUserDecryptedKey(id) }
 
     @DeleteMapping("/{id}")
-    fun deleteUser(@PathVariable id: UUID): ResponseEntity<Unit> {
-        userService.deleteUser(id)
-        return ResponseEntity.noContent().build()
-    }
+    suspend fun deleteUser(@PathVariable id: UUID): ResponseEntity<Unit> =
+        blockingEndpoint {
+            userService.deleteUser(id)
+            ResponseEntity.noContent().build()
+        }
 }

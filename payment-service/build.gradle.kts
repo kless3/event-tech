@@ -8,6 +8,7 @@ plugins {
 
 val awsSdkVersion: String by project
 val testcontainersVersion: String by project
+val coroutinesVersion: String by project
 
 group = "com.ems"
 version = "0.0.1-SNAPSHOT"
@@ -43,6 +44,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$coroutinesVersion")
     implementation("org.liquibase:liquibase-core")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("software.amazon.awssdk:s3:$awsSdkVersion")

@@ -6,6 +6,7 @@ import com.ems.eventservice.dto.response.EventResponse
 import com.ems.eventservice.service.EventService
 import java.time.LocalDateTime
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -47,7 +48,7 @@ class OrganizerEventControllerTest {
         )
         Mockito.`when`(eventService.createOrganizerEvent(organizerUserId, request)).thenReturn(serviceResponse)
 
-        val response = controller.createEvent(organizerUserId, request)
+        val response = runBlocking { controller.createEvent(organizerUserId, request) }
 
         assertEquals(HttpStatus.CREATED, response.statusCode)
         assertEquals("/api/v1/events/$eventId", response.headers.location?.toString())

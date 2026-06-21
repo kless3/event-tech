@@ -22,22 +22,23 @@ class EventController(
     private val eventService: EventService,
 ) {
     @PostMapping
-    fun createEvent(@Valid @RequestBody request: CreateEventRequest): ResponseEntity<EventResponse> {
-        val response = eventService.createEvent(request)
-        return ResponseEntity
-            .created(URI.create("/api/v1/events/${response.id}"))
-            .body(response)
-    }
+    suspend fun createEvent(@Valid @RequestBody request: CreateEventRequest): ResponseEntity<EventResponse> =
+        blockingEndpoint {
+            val response = eventService.createEvent(request)
+            ResponseEntity
+                .created(URI.create("/api/v1/events/${response.id}"))
+                .body(response)
+        }
 
     @GetMapping("/{id}")
-    fun getEvent(@PathVariable id: UUID): EventResponse =
-        eventService.getEvent(id)
+    suspend fun getEvent(@PathVariable id: UUID): EventResponse =
+        blockingEndpoint { eventService.getEvent(id) }
 
     @GetMapping("/{id}/availability")
-    fun getAvailability(@PathVariable id: UUID): EventAvailabilityResponse =
-        eventService.getAvailability(id)
+    suspend fun getAvailability(@PathVariable id: UUID): EventAvailabilityResponse =
+        blockingEndpoint { eventService.getAvailability(id) }
 
     @DeleteMapping("/{id}")
-    fun cancelEvent(@PathVariable id: UUID): EventResponse =
-        eventService.cancelEvent(id)
+    suspend fun cancelEvent(@PathVariable id: UUID): EventResponse =
+        blockingEndpoint { eventService.cancelEvent(id) }
 }

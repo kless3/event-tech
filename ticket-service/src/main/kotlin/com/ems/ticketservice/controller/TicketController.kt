@@ -21,18 +21,19 @@ class TicketController(
     private val ticketService: TicketService,
 ) {
     @PostMapping
-    fun createTicket(@Valid @RequestBody request: CreateTicketRequest): ResponseEntity<TicketResponse> {
-        val response = ticketService.createTicket(request)
-        return ResponseEntity
-            .created(URI.create("/api/v1/tickets/${response.id}"))
-            .body(response)
-    }
+    suspend fun createTicket(@Valid @RequestBody request: CreateTicketRequest): ResponseEntity<TicketResponse> =
+        blockingEndpoint {
+            val response = ticketService.createTicket(request)
+            ResponseEntity
+                .created(URI.create("/api/v1/tickets/${response.id}"))
+                .body(response)
+        }
 
     @GetMapping("/{id}")
-    fun getTicket(@PathVariable id: UUID): TicketResponse =
-        ticketService.getTicket(id)
+    suspend fun getTicket(@PathVariable id: UUID): TicketResponse =
+        blockingEndpoint { ticketService.getTicket(id) }
 
     @DeleteMapping("/{id}")
-    fun cancelTicket(@PathVariable id: UUID): TicketResponse =
-        ticketService.cancelTicket(id)
+    suspend fun cancelTicket(@PathVariable id: UUID): TicketResponse =
+        blockingEndpoint { ticketService.cancelTicket(id) }
 }

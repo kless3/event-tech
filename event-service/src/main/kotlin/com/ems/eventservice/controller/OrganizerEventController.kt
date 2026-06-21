@@ -19,13 +19,14 @@ class OrganizerEventController(
     private val eventService: EventService,
 ) {
     @PostMapping
-    fun createEvent(
+    suspend fun createEvent(
         @PathVariable organizerUserId: UUID,
         @Valid @RequestBody request: CreateOrganizerEventRequest,
-    ): ResponseEntity<EventResponse> {
-        val response = eventService.createOrganizerEvent(organizerUserId, request)
-        return ResponseEntity
-            .created(URI.create("/api/v1/events/${response.id}"))
-            .body(response)
-    }
+    ): ResponseEntity<EventResponse> =
+        blockingEndpoint {
+            val response = eventService.createOrganizerEvent(organizerUserId, request)
+            ResponseEntity
+                .created(URI.create("/api/v1/events/${response.id}"))
+                .body(response)
+        }
 }

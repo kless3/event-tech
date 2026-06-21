@@ -14,6 +14,6 @@ class InternalTicketSummaryController(
     private val ticketService: TicketService,
 ) {
     @GetMapping("/{eventId}/ticket-summary")
-    fun getTicketSummary(@PathVariable eventId: UUID): TicketSummaryResponse =
-        ticketService.getTicketSummary(eventId)
+    suspend fun getTicketSummary(@PathVariable eventId: UUID): TicketSummaryResponse =
+        blockingEndpoint { ticketService.getTicketSummary(eventId) }
 }

@@ -21,29 +21,30 @@ class PaymentController(
     private val paymentService: PaymentService,
 ) {
     @PostMapping
-    fun createPayment(@Valid @RequestBody request: CreatePaymentRequest): ResponseEntity<PaymentResponse> {
-        val response = paymentService.createPayment(request)
-        return ResponseEntity
-            .created(URI.create("/api/v1/payments/${response.id}"))
-            .body(response)
-    }
+    suspend fun createPayment(@Valid @RequestBody request: CreatePaymentRequest): ResponseEntity<PaymentResponse> =
+        blockingEndpoint {
+            val response = paymentService.createPayment(request)
+            ResponseEntity
+                .created(URI.create("/api/v1/payments/${response.id}"))
+                .body(response)
+        }
 
     @GetMapping("/{id}")
-    fun getPayment(@PathVariable id: UUID): PaymentResponse =
-        paymentService.getPayment(id)
+    suspend fun getPayment(@PathVariable id: UUID): PaymentResponse =
+        blockingEndpoint { paymentService.getPayment(id) }
 
     @GetMapping("/by-ticket/{ticketId}")
-    fun getPaymentByTicketId(@PathVariable ticketId: UUID): PaymentResponse =
-        paymentService.getPaymentByTicketId(ticketId)
+    suspend fun getPaymentByTicketId(@PathVariable ticketId: UUID): PaymentResponse =
+        blockingEndpoint { paymentService.getPaymentByTicketId(ticketId) }
 
     @PostMapping("/{id}/capture")
-    fun capturePayment(@PathVariable id: UUID): PaymentResponse =
-        paymentService.capturePayment(id)
+    suspend fun capturePayment(@PathVariable id: UUID): PaymentResponse =
+        blockingEndpoint { paymentService.capturePayment(id) }
 
     @PostMapping("/{id}/fail")
-    fun failPayment(
+    suspend fun failPayment(
         @PathVariable id: UUID,
         @Valid @RequestBody request: FailPaymentRequest,
     ): PaymentResponse =
-        paymentService.failPayment(id, request.reason)
+        blockingEndpoint { paymentService.failPayment(id, request.reason) }
 }
