@@ -77,6 +77,18 @@ services:
       timeout: 5s
       retries: 10
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    container_name: ems-keycloak
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8088:8080"
+
   user-service:
     build:
       context: ./user-service
@@ -318,8 +330,12 @@ services:
         condition: service_started
       importer-service:
         condition: service_started
+      keycloak:
+        condition: service_started
     environment:
       SERVER_PORT: 8083
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ems
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ems/protocol/openid-connect/certs
       APP_ROUTES_USER_SERVICE_BASE_URL: http://user-service:8080
       APP_ROUTES_TICKET_SERVICE_BASE_URL: http://ticket-service:8081
       APP_ROUTES_EVENT_SERVICE_BASE_URL: http://event-service:8082
