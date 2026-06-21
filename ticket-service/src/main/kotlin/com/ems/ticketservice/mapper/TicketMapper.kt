@@ -8,6 +8,7 @@ fun Ticket.toResponse(payload: TicketPayload? = null) = TicketResponse(
     id = id,
     userId = userId,
     eventId = eventId,
+    paymentId = paymentId,
     status = status,
     holderName = payload?.holderName,
     seatCode = payload?.seatCode,

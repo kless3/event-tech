@@ -2,6 +2,7 @@ package com.ems.paymentservice.service
 
 import com.ems.paymentservice.domain.Payment
 import com.ems.paymentservice.domain.PaymentStatus
+import com.ems.paymentservice.dto.event.TicketCreatedEvent
 import com.ems.paymentservice.dto.request.CreatePaymentRequest
 import com.ems.paymentservice.dto.response.PaymentResponse
 import com.ems.paymentservice.exception.PaymentNotFoundException
@@ -49,9 +50,28 @@ class PaymentService(
         return payment.toResponse()
     }
 
+    @Transactional
+    fun createPaymentForTicket(event: TicketCreatedEvent): PaymentResponse =
+        createPayment(
+            CreatePaymentRequest(
+                ticketId = event.ticketId,
+                userId = event.userId,
+                eventId = event.eventIdRef,
+                amount = event.amount,
+                currency = event.currency,
+                idempotencyKey = "ticket:${event.ticketId}",
+            ),
+        )
+
     @Transactional(readOnly = true)
     fun getPayment(id: UUID): PaymentResponse =
         findPayment(id).toResponse()
+
+    @Transactional(readOnly = true)
+    fun getPaymentByTicketId(ticketId: UUID): PaymentResponse =
+        paymentRepository.findByTicketId(ticketId)
+            .orElseThrow { PaymentNotFoundException(ticketId) }
+            .toResponse()
 
     @Transactional
     fun capturePayment(id: UUID): PaymentResponse {

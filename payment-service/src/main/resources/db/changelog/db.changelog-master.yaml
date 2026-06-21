@@ -167,3 +167,27 @@ databaseChangeLog:
                   name: status
               - column:
                   name: created_at
+        - createTable:
+            tableName: processed_kafka_messages
+            columns:
+              - column:
+                  name: message_id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: topic
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_key
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: processed_at
+                  type: timestamp
+                  constraints:
+                    nullable: false

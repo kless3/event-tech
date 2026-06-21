@@ -4,6 +4,7 @@ import com.ems.paymentservice.config.KafkaTopicsProperties
 import com.ems.paymentservice.domain.OutboxEvent
 import com.ems.paymentservice.domain.Payment
 import com.ems.paymentservice.domain.PaymentStatus
+import com.ems.paymentservice.dto.event.TicketCreatedEvent
 import com.ems.paymentservice.dto.request.CreatePaymentRequest
 import com.ems.paymentservice.exception.PaymentStateException
 import com.ems.paymentservice.messaging.OutboxEventFactory
@@ -13,6 +14,7 @@ import com.ems.paymentservice.receipt.StoredReceipt
 import com.ems.paymentservice.repository.OutboxEventRepository
 import com.ems.paymentservice.repository.PaymentRepository
 import java.math.BigDecimal
+import java.time.Instant
 import java.util.Optional
 import java.util.UUID
 import kotlin.test.Test
@@ -31,6 +33,7 @@ class PaymentServiceTest {
     private val outboxEventFactory = OutboxEventFactory(
         objectMapper = objectMapper,
         topics = KafkaTopicsProperties(
+            ticketCreated = "ems.ticket.created",
             paymentCreated = "ems.payment.created",
             paymentSucceeded = "ems.payment.succeeded",
             paymentFailed = "ems.payment.failed",
@@ -79,6 +82,39 @@ class PaymentServiceTest {
         assertEquals(existingPayment.id, response.id)
         Mockito.verify(paymentRepository, Mockito.never()).save(Mockito.any(Payment::class.java))
         Mockito.verify(outboxEventRepository, Mockito.never()).save(Mockito.any(OutboxEvent::class.java))
+    }
+
+    @Test
+    fun `creates payment from ticket created event`() {
+        val event = TicketCreatedEvent(
+            eventId = UUID.randomUUID(),
+            ticketId = UUID.randomUUID(),
+            userId = UUID.randomUUID(),
+            eventIdRef = UUID.randomUUID(),
+            amount = BigDecimal("49.9"),
+            currency = "USD",
+            occurredAt = Instant.now(),
+        )
+        Mockito.`when`(paymentRepository.findByIdempotencyKey("ticket:${event.ticketId}")).thenReturn(Optional.empty())
+        Mockito.`when`(paymentRepository.save(Mockito.any(Payment::class.java))).thenAnswer { invocation ->
+            invocation.getArgument<Payment>(0)
+        }
+
+        val response = paymentService.createPaymentForTicket(event)
+
+        assertEquals(event.ticketId, response.ticketId)
+        assertEquals(PaymentStatus.PENDING, response.status)
+        Mockito.verify(outboxEventRepository).save(Mockito.any(OutboxEvent::class.java))
+    }
+
+    @Test
+    fun `returns payment by ticket id`() {
+        val payment = paymentFrom(createRequest())
+        Mockito.`when`(paymentRepository.findByTicketId(payment.ticketId)).thenReturn(Optional.of(payment))
+
+        val response = paymentService.getPaymentByTicketId(payment.ticketId)
+
+        assertEquals(payment.id, response.id)
     }
 
     @Test

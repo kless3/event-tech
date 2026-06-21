@@ -21,6 +21,8 @@ class UserDeletedConsumerTest {
     private val topics = KafkaTopicsProperties(
         userDeleted = "ems.user.deleted",
         eventCancelled = "ems.event.cancelled",
+        paymentSucceeded = "ems.payment.succeeded",
+        paymentFailed = "ems.payment.failed",
         ticketCreated = "ems.ticket.created",
         ticketGdprErased = "ems.ticket.gdpr-erased",
         deadLetterSuffix = ".DLT",

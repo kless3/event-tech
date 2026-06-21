@@ -32,6 +32,10 @@ class PaymentController(
     fun getPayment(@PathVariable id: UUID): PaymentResponse =
         paymentService.getPayment(id)
 
+    @GetMapping("/by-ticket/{ticketId}")
+    fun getPaymentByTicketId(@PathVariable ticketId: UUID): PaymentResponse =
+        paymentService.getPaymentByTicketId(ticketId)
+
     @PostMapping("/{id}/capture")
     fun capturePayment(@PathVariable id: UUID): PaymentResponse =
         paymentService.capturePayment(id)

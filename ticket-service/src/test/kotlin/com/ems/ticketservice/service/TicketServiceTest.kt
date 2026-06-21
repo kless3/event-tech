@@ -12,6 +12,7 @@ import com.ems.ticketservice.exception.TicketErasedException
 import com.ems.ticketservice.messaging.OutboxEventFactory
 import com.ems.ticketservice.repository.OutboxEventRepository
 import com.ems.ticketservice.repository.TicketRepository
+import java.math.BigDecimal
 import java.util.Base64
 import java.util.Optional
 import java.util.UUID
@@ -37,6 +38,8 @@ class TicketServiceTest {
         topics = KafkaTopicsProperties(
             userDeleted = "ems.user.deleted",
             eventCancelled = "ems.event.cancelled",
+            paymentSucceeded = "ems.payment.succeeded",
+            paymentFailed = "ems.payment.failed",
             ticketCreated = "ems.ticket.created",
             ticketGdprErased = "ems.ticket.gdpr-erased",
             deadLetterSuffix = ".DLT",
@@ -70,6 +73,8 @@ class TicketServiceTest {
                 eventId = eventId,
                 holderName = " Alice ",
                 seatCode = " A-1 ",
+                amount = BigDecimal("49.9"),
+                currency = "USD",
             ),
         )
 
@@ -79,7 +84,7 @@ class TicketServiceTest {
 
         assertEquals(userId, response.userId)
         assertEquals(eventId, response.eventId)
-        assertEquals(TicketStatus.ACTIVE, response.status)
+        assertEquals(TicketStatus.PENDING_PAYMENT, response.status)
         assertEquals("Alice", response.holderName)
         assertEquals("A-1", response.seatCode)
         assertNotNull(savedTicket.encryptedPayload)
@@ -89,6 +94,8 @@ class TicketServiceTest {
         Mockito.verify(outboxEventRepository).save(outboxCaptor.capture())
         assertEquals("ticket.created", outboxCaptor.value.eventType)
         assertEquals("ems.ticket.created", outboxCaptor.value.topic)
+        assertEquals(true, outboxCaptor.value.payload.contains("\"amount\":49.90"))
+        assertEquals(true, outboxCaptor.value.payload.contains("\"currency\":\"USD\""))
     }
 
     @Test
@@ -112,7 +119,7 @@ class TicketServiceTest {
             encryptedTicket(userId = userId, payload = TicketPayload("Alice", "A-1")),
             encryptedTicket(userId = userId, payload = TicketPayload("Alice", "A-2")),
         )
-        Mockito.`when`(ticketRepository.findAllByUserIdAndStatus(userId, TicketStatus.ACTIVE)).thenReturn(tickets)
+        Mockito.`when`(ticketRepository.findAllByUserIdAndStatusIn(userId, erasureStatuses())).thenReturn(tickets)
 
         val erasedIds = ticketService.eraseTicketsForUser(userId)
 
@@ -146,6 +153,30 @@ class TicketServiceTest {
         }
     }
 
+    @Test
+    fun `activates pending ticket after successful payment`() {
+        val ticket = encryptedTicket(userId = UUID.randomUUID(), payload = TicketPayload("Alice", "A-1"))
+        val paymentId = UUID.randomUUID()
+        Mockito.`when`(ticketRepository.findById(ticket.id)).thenReturn(Optional.of(ticket))
+
+        ticketService.activateTicketAfterPayment(ticket.id, paymentId)
+
+        assertEquals(TicketStatus.ACTIVE, ticket.status)
+        assertEquals(paymentId, ticket.paymentId)
+    }
+
+    @Test
+    fun `marks pending ticket as payment failed`() {
+        val ticket = encryptedTicket(userId = UUID.randomUUID(), payload = TicketPayload("Alice", "A-1"))
+        val paymentId = UUID.randomUUID()
+        Mockito.`when`(ticketRepository.findById(ticket.id)).thenReturn(Optional.of(ticket))
+
+        ticketService.markTicketPaymentFailed(ticket.id, paymentId)
+
+        assertEquals(TicketStatus.PAYMENT_FAILED, ticket.status)
+        assertEquals(paymentId, ticket.paymentId)
+    }
+
     private fun encryptedTicket(userId: UUID, payload: TicketPayload): Ticket {
         val encrypted = cryptoService.encrypt(objectMapper.writeValueAsString(payload), dekBase64)
         return Ticket(
@@ -155,5 +186,12 @@ class TicketServiceTest {
             payloadIv = encrypted.ivBase64,
         )
     }
+
+    private fun erasureStatuses(): List<TicketStatus> =
+        listOf(
+            TicketStatus.PENDING_PAYMENT,
+            TicketStatus.ACTIVE,
+            TicketStatus.PAYMENT_FAILED,
+        )
 
 }

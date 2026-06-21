@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "app.kafka.topics")
 data class KafkaTopicsProperties(
+    val ticketCreated: String,
     val paymentCreated: String,
     val paymentSucceeded: String,
     val paymentFailed: String,

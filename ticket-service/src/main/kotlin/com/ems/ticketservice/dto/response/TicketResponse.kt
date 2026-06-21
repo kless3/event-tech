@@ -8,6 +8,7 @@ data class TicketResponse(
     val id: UUID,
     val userId: UUID?,
     val eventId: UUID,
+    val paymentId: UUID?,
     val status: TicketStatus,
     val holderName: String?,
     val seatCode: String?,

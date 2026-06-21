@@ -42,6 +42,7 @@ management:
 app:
   kafka:
     topics:
+      ticket-created: ${APP_KAFKA_TOPICS_TICKET_CREATED:ems.ticket.created}
       payment-created: ${APP_KAFKA_TOPICS_PAYMENT_CREATED:ems.payment.created}
       payment-succeeded: ${APP_KAFKA_TOPICS_PAYMENT_SUCCEEDED:ems.payment.succeeded}
       payment-failed: ${APP_KAFKA_TOPICS_PAYMENT_FAILED:ems.payment.failed}

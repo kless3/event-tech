@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class KafkaTopicsProperties(
     val userDeleted: String,
     val eventCancelled: String,
+    val paymentSucceeded: String,
+    val paymentFailed: String,
     val ticketCreated: String,
     val ticketGdprErased: String,
     val deadLetterSuffix: String,

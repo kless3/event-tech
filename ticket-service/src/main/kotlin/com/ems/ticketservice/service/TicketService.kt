@@ -14,6 +14,7 @@ import com.ems.ticketservice.mapper.toResponse
 import com.ems.ticketservice.messaging.OutboxEventFactory
 import com.ems.ticketservice.repository.OutboxEventRepository
 import com.ems.ticketservice.repository.TicketRepository
+import java.math.RoundingMode
 import java.time.LocalDateTime
 import java.util.UUID
 import org.springframework.cache.CacheManager
@@ -36,6 +37,8 @@ class TicketService(
     fun createTicket(request: CreateTicketRequest): TicketResponse {
         val userId = requireNotNull(request.userId) { "userId must not be null" }
         val eventId = requireNotNull(request.eventId) { "eventId must not be null" }
+        val amount = requireNotNull(request.amount) { "amount must not be null" }.setScale(2, RoundingMode.HALF_UP)
+        val currency = request.currency.trim().uppercase()
         val userDek = userKeyClient.getUserDek(userId)
         val payload = TicketPayload(
             holderName = request.holderName.trim(),
@@ -51,7 +54,7 @@ class TicketService(
             ),
         )
 
-        outboxEventRepository.save(outboxEventFactory.ticketCreated(ticket.id, userId, eventId))
+        outboxEventRepository.save(outboxEventFactory.ticketCreated(ticket.id, userId, eventId, amount, currency))
         evictTicketSummary(eventId)
         return ticket.toResponse(payload)
     }
@@ -77,7 +80,7 @@ class TicketService(
     @Transactional
     fun eraseTicketsForUser(userId: UUID): List<UUID> {
         val erasedAt = LocalDateTime.now()
-        val tickets = ticketRepository.findAllByUserIdAndStatus(userId, TicketStatus.ACTIVE)
+        val tickets = ticketRepository.findAllByUserIdAndStatusIn(userId, ERASABLE_TICKET_STATUSES)
         if (tickets.isEmpty()) {
             return emptyList()
         }
@@ -99,10 +102,38 @@ class TicketService(
 
     @Transactional
     fun cancelActiveTicketsForEvent(eventId: UUID): List<UUID> {
-        val tickets = ticketRepository.findAllByEventIdAndStatus(eventId, TicketStatus.ACTIVE)
+        val tickets = ticketRepository.findAllByEventIdAndStatusIn(eventId, EVENT_CANCELLABLE_TICKET_STATUSES)
         tickets.forEach(Ticket::cancel)
         evictTicketSummary(eventId)
         return tickets.map { it.id }
+    }
+
+    @Transactional
+    fun activateTicketAfterPayment(ticketId: UUID, paymentId: UUID) {
+        val ticket = findTicket(ticketId)
+        if (ticket.status == TicketStatus.ACTIVE && ticket.paymentId == paymentId) {
+            return
+        }
+        if (ticket.status != TicketStatus.PENDING_PAYMENT) {
+            return
+        }
+
+        ticket.activateAfterPayment(paymentId)
+        evictTicketSummary(ticket.eventId)
+    }
+
+    @Transactional
+    fun markTicketPaymentFailed(ticketId: UUID, paymentId: UUID) {
+        val ticket = findTicket(ticketId)
+        if (ticket.status == TicketStatus.PAYMENT_FAILED && ticket.paymentId == paymentId) {
+            return
+        }
+        if (ticket.status != TicketStatus.PENDING_PAYMENT) {
+            return
+        }
+
+        ticket.markPaymentFailed(paymentId)
+        evictTicketSummary(ticket.eventId)
     }
 
     private fun findTicket(id: UUID): Ticket =
@@ -122,5 +153,17 @@ class TicketService(
 
     private fun evictTicketSummary(eventId: UUID) {
         cacheManager.getCache(CacheNames.TICKET_SUMMARIES)?.evict(eventId)
+    }
+
+    private companion object {
+        val ERASABLE_TICKET_STATUSES = listOf(
+            TicketStatus.PENDING_PAYMENT,
+            TicketStatus.ACTIVE,
+            TicketStatus.PAYMENT_FAILED,
+        )
+        val EVENT_CANCELLABLE_TICKET_STATUSES = listOf(
+            TicketStatus.PENDING_PAYMENT,
+            TicketStatus.ACTIVE,
+        )
     }
 }

@@ -61,6 +61,8 @@ app:
     topics:
       user-deleted: ${APP_KAFKA_TOPICS_USER_DELETED:ems.user.deleted}
       event-cancelled: ${APP_KAFKA_TOPICS_EVENT_CANCELLED:ems.event.cancelled}
+      payment-succeeded: ${APP_KAFKA_TOPICS_PAYMENT_SUCCEEDED:ems.payment.succeeded}
+      payment-failed: ${APP_KAFKA_TOPICS_PAYMENT_FAILED:ems.payment.failed}
       ticket-created: ${APP_KAFKA_TOPICS_TICKET_CREATED:ems.ticket.created}
       ticket-gdpr-erased: ${APP_KAFKA_TOPICS_TICKET_GDPR_ERASED:ems.ticket.gdpr-erased}
       dead-letter-suffix: ${APP_KAFKA_TOPICS_DEAD_LETTER_SUFFIX:.DLT}

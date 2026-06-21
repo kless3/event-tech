@@ -24,6 +24,9 @@ class Ticket(
     @Column(name = "event_id", nullable = false, updatable = false)
     val eventId: UUID,
 
+    @Column(name = "payment_id")
+    var paymentId: UUID? = null,
+
     @Column(name = "encrypted_payload", columnDefinition = "VARCHAR")
     var encryptedPayload: String?,
 
@@ -32,7 +35,7 @@ class Ticket(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
-    var status: TicketStatus = TicketStatus.ACTIVE,
+    var status: TicketStatus = TicketStatus.PENDING_PAYMENT,
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -55,5 +58,15 @@ class Ticket(
 
     fun cancel() {
         status = TicketStatus.CANCELLED
+    }
+
+    fun activateAfterPayment(paymentId: UUID) {
+        this.paymentId = paymentId
+        status = TicketStatus.ACTIVE
+    }
+
+    fun markPaymentFailed(paymentId: UUID) {
+        this.paymentId = paymentId
+        status = TicketStatus.PAYMENT_FAILED
     }
 }

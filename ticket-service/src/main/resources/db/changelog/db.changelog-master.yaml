@@ -21,6 +21,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: payment_id
+                  type: uuid
+              - column:
                   name: encrypted_payload
                   type: varchar
               - column:

@@ -1,4 +1,4 @@
-package com.ems.ticketservice.dto.event
+package com.ems.paymentservice.dto.event
 
 import java.math.BigDecimal
 import java.time.Instant
