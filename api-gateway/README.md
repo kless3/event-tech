@@ -53,6 +53,12 @@ curl -s \
   http://localhost:8088/realms/ems/protocol/openid-connect/token
 ```
 
+Or use the helper from the repository root:
+
+```bash
+./scripts/keycloak-token.sh organizer@ems.local password
+```
+
 Use the token through the gateway:
 
 ```bash
