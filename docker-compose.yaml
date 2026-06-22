@@ -80,7 +80,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
     container_name: ems-keycloak
-    command: ["start-dev"]
+    command: ["start-dev", "--import-realm"]
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -88,6 +88,14 @@ services:
       KC_HOSTNAME_STRICT: "false"
     ports:
       - "8088:8080"
+    volumes:
+      - ./keycloak/ems-realm.json:/opt/keycloak/data/import/ems-realm.json:ro
+      - keycloak-data:/opt/keycloak/data
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /realms/ems/.well-known/openid-configuration HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q 'issuer' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
 
   user-service:
     build:
@@ -333,7 +341,7 @@ services:
       importer-service:
         condition: service_started
       keycloak:
-        condition: service_started
+        condition: service_healthy
     environment:
       SERVER_PORT: 8083
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ems
@@ -357,3 +365,4 @@ volumes:
   importer-service-postgres-data:
   redis-data:
   localstack-data:
+  keycloak-data:
