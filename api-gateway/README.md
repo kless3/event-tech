@@ -12,12 +12,62 @@ The gateway is built with Kotlin, Spring Boot 4, and Spring Cloud Gateway Server
 | `/api/v1/tickets/**` | `ticket-service` |
 | `/api/v1/events/**` | `event-service` |
 | `/api/v1/organizers/**` | `event-service` |
+| `/api/v1/payments/**` | `payment-service` |
+| `/api/v1/notifications/**` | `notification-service` |
+| `/api/v1/imports/**` | `importer-service` |
+
+## Auth
+
+The gateway validates Keycloak JWT access tokens from the `ems` realm and maps realm/client roles to Spring Security roles.
+
+Local Keycloak users:
+
+| Username | Password | Roles |
+| --- | --- | --- |
+| `user@ems.local` | `password` | `USER` |
+| `organizer@ems.local` | `password` | `USER`, `ORGANIZER` |
+| `admin@ems.local` | `password` | `USER`, `ORGANIZER`, `ADMIN` |
+
+Role rules:
+
+| Public path | Access |
+| --- | --- |
+| `GET /api/v1/events/**` | Public |
+| `POST /api/v1/users/**` | Public |
+| `/api/v1/tickets/**` | `USER`, `ORGANIZER`, `ADMIN` |
+| `/api/v1/payments/**` | `USER`, `ORGANIZER`, `ADMIN` |
+| `/api/v1/users/**` | `USER`, `ADMIN` |
+| `POST /api/v1/events/**` | `ORGANIZER`, `ADMIN` |
+| `/api/v1/organizers/**` | `ORGANIZER`, `ADMIN` |
+| `/api/v1/imports/**` | `ORGANIZER`, `ADMIN` |
+| `/api/v1/notifications/**` | `ADMIN` |
+
+Get a local access token:
+
+```bash
+curl -s \
+  -d "client_id=ems-api-gateway" \
+  -d "username=organizer@ems.local" \
+  -d "password=password" \
+  -d "grant_type=password" \
+  http://localhost:8088/realms/ems/protocol/openid-connect/token
+```
+
+Use the token through the gateway:
+
+```bash
+TOKEN="<access_token>"
+
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8083/api/v1/imports/ticketmaster
+```
 
 ## Key Features
 
 - Non-blocking HTTP routing with Spring Cloud Gateway.
 - Configurable upstream service URLs.
 - Correlation ID propagation through `X-Correlation-Id`.
+- Keycloak JWT validation with RBAC enforcement.
 - Actuator health, info, Prometheus, and Gateway endpoints.
 - Dockerfile for standalone image builds.
 - Docker Compose integration from the EMS project root.
