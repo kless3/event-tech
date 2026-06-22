@@ -1,0 +1,105 @@
+{
+  "realm": "ems",
+  "enabled": true,
+  "displayName": "Event Management System",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "USER",
+        "description": "Customer role for ticket purchase flows"
+      },
+      {
+        "name": "ORGANIZER",
+        "description": "Organizer role for event creation and imports"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Administrative role for operational endpoints"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "ems-api-gateway",
+      "name": "EMS API Gateway",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8083/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8083"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "user@ems.local",
+      "email": "user@ems.local",
+      "firstName": "EMS",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER"
+      ]
+    },
+    {
+      "username": "organizer@ems.local",
+      "email": "organizer@ems.local",
+      "firstName": "EMS",
+      "lastName": "Organizer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER",
+        "ORGANIZER"
+      ]
+    },
+    {
+      "username": "admin@ems.local",
+      "email": "admin@ems.local",
+      "firstName": "EMS",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER",
+        "ORGANIZER",
+        "ADMIN"
+      ]
+    }
+  ]
+}
