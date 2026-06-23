@@ -128,6 +128,17 @@ services:
       - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
 
+  loki:
+    image: grafana/loki:3.2.1
+    container_name: ems-loki
+    command:
+      - -config.file=/etc/loki/local-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki-config.yml:/etc/loki/local-config.yml:ro
+      - loki-data:/loki
+
   user-service:
     build:
       context: ./user-service
@@ -399,3 +410,4 @@ volumes:
   keycloak-data:
   prometheus-data:
   grafana-data:
+  loki-data:
