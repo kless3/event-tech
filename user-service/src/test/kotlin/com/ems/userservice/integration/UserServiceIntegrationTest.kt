@@ -3,6 +3,8 @@ package com.ems.userservice.integration
 import com.ems.userservice.domain.User
 import com.ems.userservice.repository.UserRepository
 import com.ems.userservice.service.UserService
+import java.net.ServerSocket
+import java.time.Duration
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +19,8 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 
@@ -105,21 +108,34 @@ class UserServiceIntegrationTest {
 
     companion object {
         private const val ALICE_EMAIL = "alice@example.com"
+        private const val POSTGRES_DATABASE = "user_service"
+        private const val POSTGRES_USERNAME = "user_service"
+        private const val POSTGRES_PASSWORD = "user_service"
+        private val postgresPort = ServerSocket(0).use { it.localPort }
 
         @Container
         @JvmStatic
-        val postgres: PostgreSQLContainer<Nothing> = PostgreSQLContainer<Nothing>("postgres:16-alpine").apply {
-            withDatabaseName("user_service")
-            withUsername("user_service")
-            withPassword("user_service")
+        val postgres: GenericContainer<Nothing> = GenericContainer<Nothing>("postgres:17-alpine").apply {
+            withEnv("POSTGRES_DB", POSTGRES_DATABASE)
+            withEnv("POSTGRES_USER", POSTGRES_USERNAME)
+            withEnv("POSTGRES_PASSWORD", POSTGRES_PASSWORD)
+            withCommand("postgres", "-c", "port=$postgresPort", "-c", "fsync=off")
+            waitingFor(
+                Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2)
+                    .withStartupTimeout(Duration.ofSeconds(30)),
+            )
+            withCreateContainerCmdModifier { command ->
+                command.hostConfig?.withNetworkMode("host")
+            }
         }
 
         @DynamicPropertySource
         @JvmStatic
         fun registerProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url") { postgres.jdbcUrl.withSslDisabled() }
-            registry.add("spring.datasource.username", postgres::getUsername)
-            registry.add("spring.datasource.password", postgres::getPassword)
+            registry.add("spring.datasource.url") { postgres.hostNetworkJdbcUrl().withStableConnectionSettings() }
+            registry.add("spring.datasource.username") { POSTGRES_USERNAME }
+            registry.add("spring.datasource.password") { POSTGRES_PASSWORD }
+            registry.add("spring.datasource.hikari.connection-timeout") { "10000" }
             registry.add("spring.jpa.database-platform") { "org.hibernate.dialect.PostgreSQLDialect" }
             registry.add("spring.jpa.hibernate.ddl-auto") { "none" }
             registry.add("spring.liquibase.enabled") { true }
@@ -130,9 +146,12 @@ class UserServiceIntegrationTest {
             }
         }
 
-        private fun String.withSslDisabled(): String {
+        private fun GenericContainer<Nothing>.hostNetworkJdbcUrl(): String =
+            "jdbc:postgresql://127.0.0.1:$postgresPort/$POSTGRES_DATABASE"
+
+        private fun String.withStableConnectionSettings(): String {
             val separator = if ("?" in this) "&" else "?"
-            return "$this${separator}sslmode=disable"
+            return "$this${separator}sslmode=disable&connectTimeout=5&socketTimeout=10&tcpKeepAlive=true"
         }
     }
 }
