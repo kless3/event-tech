@@ -1,5 +1,6 @@
 package com.ems.ticketservice.controller
 
+import com.ems.ticketservice.api.TicketApi
 import com.ems.ticketservice.dto.request.CreateTicketRequest
 import com.ems.ticketservice.dto.response.TicketResponse
 import com.ems.ticketservice.service.TicketService
@@ -19,9 +20,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/tickets")
 class TicketController(
     private val ticketService: TicketService,
-) {
+) : TicketApi {
     @PostMapping
-    suspend fun createTicket(@Valid @RequestBody request: CreateTicketRequest): ResponseEntity<TicketResponse> =
+    override suspend fun createTicket(@Valid @RequestBody request: CreateTicketRequest): ResponseEntity<TicketResponse> =
         blockingEndpoint {
             val response = ticketService.createTicket(request)
             ResponseEntity
@@ -30,10 +31,10 @@ class TicketController(
         }
 
     @GetMapping("/{id}")
-    suspend fun getTicket(@PathVariable id: UUID): TicketResponse =
+    override suspend fun getTicket(@PathVariable id: UUID): TicketResponse =
         blockingEndpoint { ticketService.getTicket(id) }
 
     @DeleteMapping("/{id}")
-    suspend fun cancelTicket(@PathVariable id: UUID): TicketResponse =
+    override suspend fun cancelTicket(@PathVariable id: UUID): TicketResponse =
         blockingEndpoint { ticketService.cancelTicket(id) }
 }
