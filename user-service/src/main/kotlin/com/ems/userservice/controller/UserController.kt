@@ -1,5 +1,6 @@
 package com.ems.userservice.controller
 
+import com.ems.userservice.api.UserApi
 import com.ems.userservice.dto.request.CreateUserRequest
 import com.ems.userservice.dto.response.DecryptedKeyResponse
 import com.ems.userservice.dto.response.UserResponse
@@ -20,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/users")
 class UserController(
     private val userService: UserService,
-) {
+) : UserApi {
     @PostMapping
-    suspend fun createUser(@Valid @RequestBody request: CreateUserRequest): ResponseEntity<UserResponse> =
+    override suspend fun createUser(@Valid @RequestBody request: CreateUserRequest): ResponseEntity<UserResponse> =
         blockingEndpoint {
             val response = userService.createUser(request.email)
             ResponseEntity
@@ -31,11 +32,11 @@ class UserController(
         }
 
     @GetMapping("/{id}/decrypt-key")
-    suspend fun getUserDecryptedKey(@PathVariable id: UUID): DecryptedKeyResponse =
+    override suspend fun getUserDecryptedKey(@PathVariable id: UUID): DecryptedKeyResponse =
         blockingEndpoint { userService.getUserDecryptedKey(id) }
 
     @DeleteMapping("/{id}")
-    suspend fun deleteUser(@PathVariable id: UUID): ResponseEntity<Unit> =
+    override suspend fun deleteUser(@PathVariable id: UUID): ResponseEntity<Unit> =
         blockingEndpoint {
             userService.deleteUser(id)
             ResponseEntity.noContent().build()
