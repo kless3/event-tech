@@ -1,5 +1,6 @@
 package com.ems.paymentservice.controller
 
+import com.ems.paymentservice.api.PaymentApi
 import com.ems.paymentservice.dto.request.CreatePaymentRequest
 import com.ems.paymentservice.dto.request.FailPaymentRequest
 import com.ems.paymentservice.dto.response.PaymentReceiptResponse
@@ -20,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/payments")
 class PaymentController(
     private val paymentService: PaymentService,
-) {
+) : PaymentApi {
     @PostMapping
-    suspend fun createPayment(@Valid @RequestBody request: CreatePaymentRequest): ResponseEntity<PaymentResponse> =
+    override suspend fun createPayment(@Valid @RequestBody request: CreatePaymentRequest): ResponseEntity<PaymentResponse> =
         blockingEndpoint {
             val response = paymentService.createPayment(request)
             ResponseEntity
@@ -31,23 +32,23 @@ class PaymentController(
         }
 
     @GetMapping("/{id}")
-    suspend fun getPayment(@PathVariable id: UUID): PaymentResponse =
+    override suspend fun getPayment(@PathVariable id: UUID): PaymentResponse =
         blockingEndpoint { paymentService.getPayment(id) }
 
     @GetMapping("/by-ticket/{ticketId}")
-    suspend fun getPaymentByTicketId(@PathVariable ticketId: UUID): PaymentResponse =
+    override suspend fun getPaymentByTicketId(@PathVariable ticketId: UUID): PaymentResponse =
         blockingEndpoint { paymentService.getPaymentByTicketId(ticketId) }
 
     @GetMapping("/{id}/receipt")
-    suspend fun getReceipt(@PathVariable id: UUID): PaymentReceiptResponse =
+    override suspend fun getReceipt(@PathVariable id: UUID): PaymentReceiptResponse =
         blockingEndpoint { paymentService.getReceipt(id) }
 
     @PostMapping("/{id}/capture")
-    suspend fun capturePayment(@PathVariable id: UUID): PaymentResponse =
+    override suspend fun capturePayment(@PathVariable id: UUID): PaymentResponse =
         blockingEndpoint { paymentService.capturePayment(id) }
 
     @PostMapping("/{id}/fail")
-    suspend fun failPayment(
+    override suspend fun failPayment(
         @PathVariable id: UUID,
         @Valid @RequestBody request: FailPaymentRequest,
     ): PaymentResponse =
