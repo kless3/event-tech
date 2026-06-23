@@ -1,5 +1,6 @@
 package com.ems.eventservice.controller
 
+import com.ems.eventservice.api.OrganizerEventApi
 import com.ems.eventservice.dto.request.CreateOrganizerEventRequest
 import com.ems.eventservice.dto.response.EventResponse
 import com.ems.eventservice.service.EventService
@@ -17,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/organizers/me/events")
 class OrganizerEventController(
     private val eventService: EventService,
-) {
+) : OrganizerEventApi {
     @PostMapping
-    suspend fun createEvent(
+    override suspend fun createEvent(
         @RequestHeader(AUTHENTICATED_USER_ID_HEADER) organizerUserId: UUID,
         @Valid @RequestBody request: CreateOrganizerEventRequest,
     ): ResponseEntity<EventResponse> =

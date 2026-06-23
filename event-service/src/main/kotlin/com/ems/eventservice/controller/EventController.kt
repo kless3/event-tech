@@ -1,5 +1,6 @@
 package com.ems.eventservice.controller
 
+import com.ems.eventservice.api.EventApi
 import com.ems.eventservice.dto.request.CreateEventRequest
 import com.ems.eventservice.dto.response.EventAvailabilityResponse
 import com.ems.eventservice.dto.response.EventResponse
@@ -20,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/events")
 class EventController(
     private val eventService: EventService,
-) {
+) : EventApi {
     @PostMapping
-    suspend fun createEvent(@Valid @RequestBody request: CreateEventRequest): ResponseEntity<EventResponse> =
+    override suspend fun createEvent(@Valid @RequestBody request: CreateEventRequest): ResponseEntity<EventResponse> =
         blockingEndpoint {
             val response = eventService.createEvent(request)
             ResponseEntity
@@ -31,14 +32,14 @@ class EventController(
         }
 
     @GetMapping("/{id}")
-    suspend fun getEvent(@PathVariable id: UUID): EventResponse =
+    override suspend fun getEvent(@PathVariable id: UUID): EventResponse =
         blockingEndpoint { eventService.getEvent(id) }
 
     @GetMapping("/{id}/availability")
-    suspend fun getAvailability(@PathVariable id: UUID): EventAvailabilityResponse =
+    override suspend fun getAvailability(@PathVariable id: UUID): EventAvailabilityResponse =
         blockingEndpoint { eventService.getAvailability(id) }
 
     @DeleteMapping("/{id}")
-    suspend fun cancelEvent(@PathVariable id: UUID): EventResponse =
+    override suspend fun cancelEvent(@PathVariable id: UUID): EventResponse =
         blockingEndpoint { eventService.cancelEvent(id) }
 }
