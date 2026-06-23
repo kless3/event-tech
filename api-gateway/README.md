@@ -18,7 +18,11 @@ The gateway is built with Kotlin, Spring Boot 4, and Spring Cloud Gateway Server
 
 ## Auth
 
-The gateway validates Keycloak JWT access tokens from the `ems` realm and maps realm/client roles to Spring Security roles.
+The gateway validates Keycloak JWT access tokens from the `ems` realm, maps realm/client roles to Spring Security roles, and forwards trusted user context to downstream services with:
+
+- `X-Authenticated-User-Id`
+- `X-Authenticated-Username`
+- `X-Authenticated-User-Roles`
 
 Local Keycloak users:
 
@@ -37,7 +41,8 @@ Role rules:
 | `/api/v1/tickets/**` | `USER`, `ORGANIZER`, `ADMIN` |
 | `/api/v1/payments/**` | `USER`, `ORGANIZER`, `ADMIN` |
 | `/api/v1/users/**` | `USER`, `ADMIN` |
-| `POST /api/v1/events/**` | `ORGANIZER`, `ADMIN` |
+| `POST /api/v1/events/**` | Denied at the public gateway; internal service-to-service API only |
+| `PUT/PATCH/DELETE /api/v1/events/**` | `ORGANIZER`, `ADMIN` |
 | `/api/v1/organizers/**` | `ORGANIZER`, `ADMIN` |
 | `/api/v1/imports/**` | `ORGANIZER`, `ADMIN` |
 | `/api/v1/notifications/**` | `ADMIN` |
@@ -68,12 +73,29 @@ curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:8083/api/v1/imports/ticketmaster
 ```
 
+Create an event as the authenticated organizer:
+
+```bash
+curl -X POST http://localhost:8083/api/v1/organizers/me/events \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Event Summit",
+    "description": "Tech conference",
+    "location": "Berlin",
+    "startsAt": "2030-06-17T18:00:00",
+    "capacity": 500,
+    "organizerNote": "speaker room setup"
+  }'
+```
+
 ## Key Features
 
 - Non-blocking HTTP routing with Spring Cloud Gateway.
 - Configurable upstream service URLs.
 - Correlation ID propagation through `X-Correlation-Id`.
 - Keycloak JWT validation with RBAC enforcement.
+- Authenticated user context propagation to downstream services.
 - Actuator health, info, Prometheus, and Gateway endpoints.
 - Dockerfile for standalone image builds.
 - Docker Compose integration from the EMS project root.
