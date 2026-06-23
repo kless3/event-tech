@@ -8,6 +8,23 @@ spring:
           issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:http://localhost:8088/realms/ems}
           jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://localhost:8088/realms/ems/protocol/openid-connect/certs}
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /docs/user-service/v3/api-docs
+      - name: ticket-service
+        url: /docs/ticket-service/v3/api-docs
+      - name: event-service
+        url: /docs/event-service/v3/api-docs
+      - name: payment-service
+        url: /docs/payment-service/v3/api-docs
+      - name: notification-service
+        url: /docs/notification-service/v3/api-docs
+      - name: importer-service
+        url: /docs/importer-service/v3/api-docs
+
 server:
   port: ${SERVER_PORT:8083}
 

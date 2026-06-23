@@ -26,12 +26,18 @@ class GatewayRoutesConfigTest {
         val routes = routeLocator.routes.collectList().block() ?: emptyList()
         val routeIds = routes.map { route -> route.id }
 
-        assertEquals(6, routes.size)
+        assertEquals(12, routes.size)
         assertContains(routeIds, "user-service")
+        assertContains(routeIds, "user-service-openapi")
         assertContains(routeIds, "ticket-service")
+        assertContains(routeIds, "ticket-service-openapi")
         assertContains(routeIds, "event-service")
+        assertContains(routeIds, "event-service-openapi")
         assertContains(routeIds, "payment-service")
+        assertContains(routeIds, "payment-service-openapi")
         assertContains(routeIds, "notification-service")
+        assertContains(routeIds, "notification-service-openapi")
         assertContains(routeIds, "importer-service")
+        assertContains(routeIds, "importer-service-openapi")
     }
 }

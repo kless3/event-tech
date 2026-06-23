@@ -25,6 +25,8 @@ class SecurityConfig(
             .authorizeExchange { exchanges ->
                 exchanges
                     .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+                    .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .pathMatchers("/docs/*/v3/api-docs").permitAll()
                     .pathMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
                     .pathMatchers(HttpMethod.POST, "/api/v1/users/**").permitAll()
                     .pathMatchers(HttpMethod.POST, "/api/v1/events/**").denyAll()

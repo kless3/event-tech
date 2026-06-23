@@ -16,6 +16,16 @@ The gateway is built with Kotlin, Spring Boot 4, and Spring Cloud Gateway Server
 | `/api/v1/notifications/**` | `notification-service` |
 | `/api/v1/imports/**` | `importer-service` |
 
+## API Documentation
+
+Swagger UI is available through the gateway:
+
+```text
+http://localhost:8083/swagger-ui.html
+```
+
+The UI aggregates OpenAPI specs from all backend services through gateway routes under `/docs/{service}/v3/api-docs`.
+
 ## Auth
 
 The gateway validates Keycloak JWT access tokens from the `ems` realm, maps realm/client roles to Spring Security roles, and forwards trusted user context to downstream services with:
