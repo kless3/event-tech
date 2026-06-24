@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ems-config
+  namespace: ems
+  labels:
+    app.kubernetes.io/name: ems-config
+    app.kubernetes.io/part-of: event-tech
+data:
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: "6379"
+  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  MANAGEMENT_OTLP_TRACING_ENDPOINT: http://otel-collector:4318/v1/traces
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/ems
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/ems/protocol/openid-connect/certs
+  APP_S3_ENDPOINT: http://localstack:4566
+  APP_S3_REGION: us-east-1
+  APP_RECEIPTS_BUCKET: ems-payment-receipts
+  APP_RECEIPTS_PUBLIC_BASE_URL: http://localstack:4566/ems-payment-receipts
