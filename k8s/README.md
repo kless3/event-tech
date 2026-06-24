@@ -21,7 +21,7 @@ kubectl apply -k k8s/base
 The base exposes the gateway through an NGINX ingress host:
 
 ```text
-http://ems.local
+ems.local
 ```
 
 The checked-in `secret.example.yaml` is documentation only and is not included in `kustomization.yaml`.

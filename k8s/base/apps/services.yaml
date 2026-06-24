@@ -24,6 +24,13 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8080"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres:5432/user_service
             - name: SPRING_DATASOURCE_USERNAME
@@ -82,6 +89,13 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8081"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://ticket-postgres:5432/ticket_service
             - name: SPRING_DATASOURCE_USERNAME
@@ -92,9 +106,9 @@ spec:
                   name: ems-secrets
                   key: TICKET_SERVICE_DB_PASSWORD
             - name: APP_CLIENTS_USER_SERVICE_BASE_URL
-              value: http://user-service:8080
+              value: $(INTERNAL_HTTP_SCHEME)://user-service:8080
             - name: APP_CLIENTS_EVENT_SERVICE_BASE_URL
-              value: http://event-service:8082
+              value: $(INTERNAL_HTTP_SCHEME)://event-service:8082
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
@@ -139,6 +153,13 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8082"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://event-postgres:5432/event_service
             - name: SPRING_DATASOURCE_USERNAME
@@ -149,9 +170,9 @@ spec:
                   name: ems-secrets
                   key: EVENT_SERVICE_DB_PASSWORD
             - name: APP_CLIENTS_USER_SERVICE_BASE_URL
-              value: http://user-service:8080
+              value: $(INTERNAL_HTTP_SCHEME)://user-service:8080
             - name: APP_CLIENTS_TICKET_SERVICE_BASE_URL
-              value: http://ticket-service:8081
+              value: $(INTERNAL_HTTP_SCHEME)://ticket-service:8081
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
@@ -196,6 +217,13 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8084"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://payment-postgres:5432/payment_service
             - name: SPRING_DATASOURCE_USERNAME
@@ -215,6 +243,10 @@ spec:
                 secretKeyRef:
                   name: ems-secrets
                   key: APP_S3_SECRET_KEY
+            - name: APP_S3_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://localstack:4566
+            - name: APP_RECEIPTS_PUBLIC_BASE_URL
+              value: $(INTERNAL_HTTP_SCHEME)://localstack:4566/ems-payment-receipts
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
@@ -259,6 +291,13 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8085"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://notification-postgres:5432/notification_service
             - name: SPRING_DATASOURCE_USERNAME
@@ -314,6 +353,13 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8086"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://importer-postgres:5432/importer_service
             - name: SPRING_DATASOURCE_USERNAME
@@ -324,7 +370,7 @@ spec:
                   name: ems-secrets
                   key: IMPORTER_SERVICE_DB_PASSWORD
             - name: APP_CLIENTS_EVENT_SERVICE_BASE_URL
-              value: http://event-service:8082
+              value: $(INTERNAL_HTTP_SCHEME)://event-service:8082
             - name: APP_IMPORT_SCHEDULE_ENABLED
               value: "false"
           readinessProbe:
@@ -371,18 +417,29 @@ spec:
           env:
             - name: SERVER_PORT
               value: "8083"
+            - name: INTERNAL_HTTP_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: ems-config
+                  key: INTERNAL_HTTP_SCHEME
+            - name: MANAGEMENT_OTLP_TRACING_ENDPOINT
+              value: $(INTERNAL_HTTP_SCHEME)://otel-collector:4318/v1/traces
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              value: $(INTERNAL_HTTP_SCHEME)://keycloak:8080/realms/ems
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: $(INTERNAL_HTTP_SCHEME)://keycloak:8080/realms/ems/protocol/openid-connect/certs
             - name: APP_ROUTES_USER_SERVICE_BASE_URL
-              value: http://user-service:8080
+              value: $(INTERNAL_HTTP_SCHEME)://user-service:8080
             - name: APP_ROUTES_TICKET_SERVICE_BASE_URL
-              value: http://ticket-service:8081
+              value: $(INTERNAL_HTTP_SCHEME)://ticket-service:8081
             - name: APP_ROUTES_EVENT_SERVICE_BASE_URL
-              value: http://event-service:8082
+              value: $(INTERNAL_HTTP_SCHEME)://event-service:8082
             - name: APP_ROUTES_PAYMENT_SERVICE_BASE_URL
-              value: http://payment-service:8084
+              value: $(INTERNAL_HTTP_SCHEME)://payment-service:8084
             - name: APP_ROUTES_NOTIFICATION_SERVICE_BASE_URL
-              value: http://notification-service:8085
+              value: $(INTERNAL_HTTP_SCHEME)://notification-service:8085
             - name: APP_ROUTES_IMPORTER_SERVICE_BASE_URL
-              value: http://importer-service:8086
+              value: $(INTERNAL_HTTP_SCHEME)://importer-service:8086
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
