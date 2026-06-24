@@ -4,8 +4,14 @@ set -euo pipefail
 KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8088}"
 KEYCLOAK_REALM="${KEYCLOAK_REALM:-ems}"
 KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-ems-api-gateway}"
-USERNAME="${1:-organizer@ems.local}"
-PASSWORD="${2:-password}"
+USERNAME="${1:-${KEYCLOAK_USERNAME:-}}"
+PASSWORD="${2:-${KEYCLOAK_PASSWORD:-}}"
+
+if [[ -z "${USERNAME}" || -z "${PASSWORD}" ]]; then
+  printf 'Usage: %s <username> <password>\n' "$0" >&2
+  printf 'Or set KEYCLOAK_USERNAME and KEYCLOAK_PASSWORD.\n' >&2
+  exit 1
+fi
 
 response="$(
   curl -fsS \

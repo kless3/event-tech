@@ -34,13 +34,7 @@ The gateway validates Keycloak JWT access tokens from the `ems` realm, maps real
 - `X-Authenticated-Username`
 - `X-Authenticated-User-Roles`
 
-Local Keycloak users:
-
-| Username | Password | Roles |
-| --- | --- | --- |
-| `user@ems.local` | `password` | `USER` |
-| `organizer@ems.local` | `password` | `USER`, `ORGANIZER` |
-| `admin@ems.local` | `password` | `USER`, `ORGANIZER`, `ADMIN` |
+The local realm imports roles and the public gateway client only. Create development users through the Keycloak Admin UI or with an environment-specific bootstrap script; do not commit user passwords into the realm import.
 
 Role rules:
 
@@ -62,8 +56,8 @@ Get a local access token:
 ```bash
 curl -s \
   -d "client_id=ems-api-gateway" \
-  -d "username=organizer@ems.local" \
-  -d "password=password" \
+  -d "username=<username>" \
+  -d "password=<password>" \
   -d "grant_type=password" \
   http://localhost:8088/realms/ems/protocol/openid-connect/token
 ```
@@ -71,7 +65,7 @@ curl -s \
 Or use the helper from the repository root:
 
 ```bash
-./scripts/keycloak-token.sh organizer@ems.local password
+./scripts/keycloak-token.sh <username> <password>
 ```
 
 Use the token through the gateway:
