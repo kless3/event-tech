@@ -4,3 +4,10 @@ namespace: ems
 resources:
   - namespace.yaml
   - configmap.yaml
+  - infra/postgres.yaml
+  - infra/platform.yaml
+
+configMapGenerator:
+  - name: ems-keycloak-realm
+    files:
+      - ems-realm.json=../../keycloak/ems-realm.json
