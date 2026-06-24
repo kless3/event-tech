@@ -7,6 +7,7 @@ resources:
   - infra/postgres.yaml
   - infra/platform.yaml
   - apps/services.yaml
+  - apps/ingress.yaml
 
 configMapGenerator:
   - name: ems-keycloak-realm
