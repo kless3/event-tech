@@ -13,7 +13,7 @@ val springdocOpenApiVersion: String by project
 
 group = "com.ems"
 version = "0.0.1-SNAPSHOT"
-description = "Payment Service for Event Management System"
+description = "Payment Service for Booking Platform"
 
 java {
     toolchain {

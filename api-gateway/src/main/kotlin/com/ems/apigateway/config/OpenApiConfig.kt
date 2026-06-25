@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @OpenAPIDefinition(
     info = Info(
-        title = "EMS API Gateway",
+        title = "Booking Platform API Gateway",
         version = "v1",
-        description = "Gateway entrypoint with aggregated OpenAPI documentation for EMS services.",
+        description = "Gateway entrypoint with aggregated OpenAPI documentation for Booking Platform services.",
     ),
 )
 @SecurityScheme(

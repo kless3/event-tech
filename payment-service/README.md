@@ -1,8 +1,8 @@
 # Payment Service
 
-`payment-service` owns payment lifecycle for the Event Management System. It stores payment records, publishes payment domain events through the transactional outbox, generates PDF receipts after successful capture, and uploads receipts to S3-compatible storage.
+`payment-service` owns the payment lifecycle for the Booking Platform. It stores payment records, publishes payment domain events through the transactional outbox, generates PDF receipts after successful capture, and uploads receipts to S3-compatible storage.
 
-The service is designed as the next step toward the EMS saga choreography:
+The service participates in the Booking Platform saga choreography:
 
 ```text
 ticket reserved -> payment created -> payment succeeded/failed -> ticket confirmed/cancelled -> notification
@@ -77,7 +77,7 @@ service      # transactional business logic
 
 ## Run
 
-From the EMS project root:
+From the Booking Platform project root:
 
 ```bash
 docker compose up --build payment-service localstack payment-postgres kafka

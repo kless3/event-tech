@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 class PdfReceiptGenerator {
     fun generate(receipt: PaymentReceipt): ByteArray {
         val lines = listOf(
-            "Event Management System",
+            "Booking Platform",
             "Payment receipt",
             "Payment ID: ${receipt.paymentId}",
             "Ticket ID: ${receipt.ticketId}",

@@ -5,7 +5,7 @@ metadata:
   namespace: ems
   labels:
     app.kubernetes.io/name: ems-config
-    app.kubernetes.io/part-of: event-tech
+    app.kubernetes.io/part-of: booking-platform
 data:
   SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   SPRING_DATA_REDIS_HOST: redis

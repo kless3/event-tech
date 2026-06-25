@@ -7,7 +7,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "EMS service is down"
+          summary: "Booking Platform service is down"
           description: "{{ $labels.job }} has not been scraped successfully for more than 1 minute."
 
       - alert: EmsHighHttpServerErrorRate

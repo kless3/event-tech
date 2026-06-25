@@ -1,6 +1,6 @@
-# E2E Purchase Flow
+# E2E Booking Flow
 
-The repository includes a black-box smoke test for the main ticket purchase journey.
+The repository includes a black-box smoke test for the main booking and ticket purchase journey.
 
 ## Run
 
@@ -35,7 +35,7 @@ The script verifies the main distributed flow through the public API gateway:
 
 1. Creates organizer and buyer records in `user-service`.
 2. Creates a matching temporary organizer identity in Keycloak.
-3. Creates an event through `/api/v1/organizers/me/events`.
+3. Creates a bookable event through `/api/v1/organizers/me/events`.
 4. Reserves a ticket through `ticket-service`.
 5. Waits for `payment-service` to create a payment from the ticket event.
 6. Captures the payment and waits for ticket activation.

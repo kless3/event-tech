@@ -1,12 +1,12 @@
 # Event Service
 
-`event-service` manages event catalog data, capacity, and lifecycle state for the Event Management System.
+`event-service` manages bookable event catalog data, capacity, and lifecycle state for the Booking Platform.
 
 The service uses synchronous calls when it needs an immediate answer from another service, such as validating an organizer through `user-service` or reading ticket counts from `ticket-service`. Deferred workflows are processed asynchronously through Kafka with transactional outbox publishing and idempotent consumers.
 
 ## Key Features
 
-- Event creation, lookup, availability checks, and cancellation.
+- Bookable event creation, lookup, availability checks, and cancellation.
 - Synchronous User Service integration for organizer validation and sensitive organizer-note encryption.
 - Synchronous Ticket Service integration for live ticket summary reads.
 - Kafka consumers for `ticket.created` and `user.deleted`.
@@ -33,7 +33,7 @@ service      # transactional business logic
 
 ## Run
 
-From the EMS project root:
+From the Booking Platform project root:
 
 ```bash
 docker compose up --build

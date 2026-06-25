@@ -1,6 +1,6 @@
 # Observability
 
-EMS runs a local observability stack for metrics, logs, and distributed traces.
+Booking Platform runs a local observability stack for metrics, logs, and distributed traces.
 
 ## Services
 
@@ -61,7 +61,7 @@ Prometheus scrapes these actuator endpoints:
 - `notification-service:8085/actuator/prometheus`
 - `importer-service:8086/actuator/prometheus`
 
-The `EMS Overview` dashboard is provisioned automatically in Grafana.
+The `Booking Platform Overview` dashboard is provisioned automatically in Grafana.
 
 ## Alerts
 
@@ -71,7 +71,7 @@ Prometheus loads alert rules from:
 observability/prometheus/alerts.yml
 ```
 
-The baseline rules cover service availability, HTTP 5xx rate, JVM heap pressure, and Hikari connection pool saturation. Grafana also shows the current number of firing alerts on the `EMS Overview` dashboard.
+The baseline rules cover service availability, HTTP 5xx rate, JVM heap pressure, and Hikari connection pool saturation. Grafana also shows the current number of firing alerts on the `Booking Platform Overview` dashboard.
 
 ## Logs
 

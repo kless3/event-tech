@@ -11,7 +11,7 @@ val springdocOpenApiVersion: String by project
 
 group = "com.ems"
 version = "0.0.1-SNAPSHOT"
-description = "API Gateway for Event Management System"
+description = "API Gateway for Booking Platform"
 
 java {
     toolchain {

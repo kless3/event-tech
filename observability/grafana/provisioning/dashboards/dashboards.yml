@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: EMS
+  - name: Booking Platform
     orgId: 1
-    folder: EMS
+    folder: Booking Platform
     type: file
     disableDeletion: false
     editable: true

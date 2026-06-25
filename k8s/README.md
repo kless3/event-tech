@@ -1,6 +1,6 @@
 # Kubernetes
 
-The `k8s/base` directory contains production-shaped manifests for running EMS on Kubernetes.
+The `k8s/base` directory contains production-shaped manifests for running Booking Platform on Kubernetes.
 
 Create environment-specific secrets before applying the base:
 

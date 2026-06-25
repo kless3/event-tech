@@ -7,9 +7,9 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @OpenAPIDefinition(
     info = Info(
-        title = "EMS Event Service API",
+        title = "Booking Platform Event Service API",
         version = "v1",
-        description = "Event catalog, availability, cancellation, and organizer event creation API.",
+        description = "Bookable event catalog, availability, cancellation, and organizer creation API.",
     ),
 )
 class OpenApiConfig

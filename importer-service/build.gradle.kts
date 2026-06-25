@@ -9,7 +9,7 @@ val springdocOpenApiVersion: String by project
 
 group = "com.ems"
 version = "0.0.1-SNAPSHOT"
-description = "Importer Service for Event Management System"
+description = "Importer Service for Booking Platform"
 
 java {
     toolchain {

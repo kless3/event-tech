@@ -4,4 +4,4 @@ metadata:
   name: ems
   labels:
     app.kubernetes.io/name: ems
-    app.kubernetes.io/part-of: event-tech
+    app.kubernetes.io/part-of: booking-platform

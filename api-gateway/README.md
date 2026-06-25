@@ -1,6 +1,6 @@
 # API Gateway
 
-`api-gateway` is the public HTTP entry point for the Event Management System. It routes external API calls to the owning backend service and keeps internal service endpoints away from the public surface.
+`api-gateway` is the public HTTP entry point for the Booking Platform. It routes external API calls to the owning backend service and keeps internal service endpoints away from the public surface.
 
 The gateway is built with Kotlin, Spring Boot 4, and Spring Cloud Gateway Server WebFlux.
 
@@ -77,7 +77,7 @@ curl -H "Authorization: Bearer $TOKEN" \
   http://localhost:8083/api/v1/imports/ticketmaster
 ```
 
-Create an event as the authenticated organizer:
+Create a bookable event as the authenticated organizer:
 
 ```bash
 curl -X POST http://localhost:8083/api/v1/organizers/me/events \
@@ -102,11 +102,11 @@ curl -X POST http://localhost:8083/api/v1/organizers/me/events \
 - Authenticated user context propagation to downstream services.
 - Actuator health, info, Prometheus, and Gateway endpoints.
 - Dockerfile for standalone image builds.
-- Docker Compose integration from the EMS project root.
+- Docker Compose integration from the Booking Platform project root.
 
 ## Run
 
-From the EMS project root:
+From the Booking Platform project root:
 
 ```bash
 docker compose up --build api-gateway

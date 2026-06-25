@@ -1,6 +1,6 @@
 # Ticket Service
 
-`ticket-service` manages event tickets for the Event Management System. It stores ticket data, protects sensitive ticket payloads with user-scoped encryption keys, and reacts to GDPR-related user lifecycle events.
+`ticket-service` manages bookings and tickets for the Booking Platform. It stores ticket data, protects sensitive ticket payloads with user-scoped encryption keys, and reacts to GDPR-related user lifecycle events.
 
 The service uses synchronous HTTP calls when it needs an immediate answer from `user-service`, such as retrieving a user's DEK for encryption or decryption. Deferred workflows are handled asynchronously through Kafka with an outbox table and idempotent consumers.
 
@@ -34,7 +34,7 @@ service      # transactional business logic
 
 ## Run
 
-From the EMS project root:
+From the Booking Platform project root:
 
 ```bash
 docker compose up --build

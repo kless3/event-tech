@@ -1,0 +1,114 @@
+# Booking Platform
+
+Booking Platform is a distributed commerce system for publishing, importing, booking, and selling live experiences such as events, workshops, classes, and local activities.
+
+The platform models the full booking lifecycle: organizers publish bookable inventory, customers reserve tickets, payments are processed asynchronously, PDF receipts are stored in S3-compatible storage, and users receive transactional notifications. The system is built as a microservice architecture with reliable event publishing, GDPR-aware data handling, API gateway security, and local observability.
+
+## Capabilities
+
+- Public API gateway with Keycloak JWT validation and role-based access control.
+- Organizer workflows for creating and managing bookable events.
+- Ticket reservation, activation, cancellation, and availability tracking.
+- Saga choreography for the booking and payment flow.
+- Transactional outbox and idempotent Kafka consumers for reliable asynchronous processing.
+- Payment lifecycle management with PDF receipt generation and S3-compatible receipt storage.
+- Notification delivery pipeline for payment and booking lifecycle events.
+- External catalog import flow for Ticketmaster and Timepad-style sources.
+- Redis caching for frequently requested data.
+- GDPR-oriented user deletion flow with envelope encryption, DEK/KEK handling, and crypto-shredding.
+- OpenAPI documentation aggregated through the gateway.
+- Docker Compose, Kubernetes manifests, GitHub Actions CI, CodeQL, Sonar analysis, and observability stack.
+
+## Architecture
+
+![System design](docs/assets/system-design-excalidraw.svg)
+
+## Services
+
+| Service | Responsibility |
+| --- | --- |
+| `api-gateway` | Public entry point, routing, JWT validation, RBAC, correlation IDs, OpenAPI aggregation |
+| `user-service` | User records, per-user encryption keys, GDPR deletion and crypto-shredding |
+| `event-service` | Bookable event catalog, organizer workflows, capacity, availability, cancellation |
+| `ticket-service` | Ticket reservation, encrypted ticket payloads, ticket state transitions |
+| `payment-service` | Payment lifecycle, receipt generation, S3-compatible receipt storage |
+| `notification-service` | Asynchronous transactional notifications |
+| `importer-service` | External source imports into the booking catalog |
+
+Supporting infrastructure includes PostgreSQL, Kafka, Redis, Keycloak, LocalStack, Prometheus, Grafana, Loki, Tempo, and the OpenTelemetry Collector.
+
+## Distributed Flow
+
+The main booking flow is implemented with saga choreography. Services publish domain events through transactional outbox tables and consume Kafka messages idempotently, which keeps service-owned databases isolated while maintaining eventual consistency across ticket, payment, receipt, and notification workflows.
+
+## Security And Privacy
+
+- Keycloak is used for authentication and role-based access control.
+- The gateway forwards trusted authenticated user context to downstream services.
+- Sensitive user-related payloads are encrypted with per-user DEKs.
+- DEKs are encrypted at rest with a service-level KEK.
+- User deletion triggers asynchronous cleanup in dependent services and removes key material to make encrypted personal data unrecoverable.
+
+## Local Run
+
+Create required local secrets in your shell or an ignored `.env` file:
+
+```bash
+export KEYCLOAK_ADMIN_PASSWORD='<local keycloak admin password>'
+export APP_SECURITY_KEK_BASE64="$(openssl rand -base64 32)"
+```
+
+Start the stack:
+
+```bash
+docker compose up --build
+```
+
+The API gateway listens on:
+
+```text
+http://localhost:8083
+```
+
+Swagger UI is available through the gateway:
+
+```text
+http://localhost:8083/swagger-ui.html
+```
+
+## Smoke Checks
+
+Run the end-to-end booking flow:
+
+```bash
+export E2E_USER_PASSWORD='<temporary e2e user password>'
+./scripts/e2e-purchase-flow.sh
+```
+
+Check observability components and service scrape targets:
+
+```bash
+./scripts/observability-smoke.sh
+```
+
+## Build
+
+Each service is built independently:
+
+```bash
+cd user-service
+./gradlew clean test bootJar --no-daemon --stacktrace
+```
+
+The CI pipeline runs the same build and test command through a GitHub Actions matrix for all services.
+
+## Documentation
+
+- [API Gateway](api-gateway/README.md)
+- [User Service](user-service/README.md)
+- [Event Service](event-service/README.md)
+- [Ticket Service](ticket-service/README.md)
+- [Payment Service](payment-service/README.md)
+- [E2E Purchase Flow](docs/e2e.md)
+- [Observability](docs/observability.md)
+- [Kubernetes](k8s/README.md)

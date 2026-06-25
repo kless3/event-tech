@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @OpenAPIDefinition(
     info = Info(
-        title = "EMS User Service API",
+        title = "Booking Platform User Service API",
         version = "v1",
         description = "User registration, user key access, and GDPR deletion API.",
     ),
