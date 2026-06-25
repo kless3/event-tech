@@ -37,6 +37,23 @@ The platform models the full booking lifecycle: organizers publish bookable inve
 
 Supporting infrastructure includes PostgreSQL, Kafka, Redis, Keycloak, LocalStack, Prometheus, Grafana, Loki, Tempo, and the OpenTelemetry Collector.
 
+## Repository Layout
+
+```text
+api-gateway/           # public gateway, RBAC, OpenAPI aggregation
+user-service/          # users, encryption keys, GDPR deletion
+event-service/         # bookable catalog, capacity, organizer workflows
+ticket-service/        # bookings, tickets, encrypted ticket payloads
+payment-service/       # payments, receipts, S3 storage
+notification-service/  # asynchronous notification records
+importer-service/      # Java-based external catalog imports
+docs/                  # architecture and smoke-test documentation
+k8s/                   # Kubernetes base manifests
+keycloak/              # local realm import
+observability/         # Prometheus, Grafana, Loki, Tempo, OTel config
+scripts/               # local helper and smoke-test scripts
+```
+
 ## Local Ports
 
 | Component | Port | Purpose |
