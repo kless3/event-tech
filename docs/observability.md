@@ -75,7 +75,7 @@ The baseline rules cover service availability, HTTP 5xx rate, JVM heap pressure,
 
 ## Logs
 
-Promtail reads Docker container logs from the local Docker host and ships them to Loki with the `job="ems-containers"` label.
+Promtail reads Docker container logs from the local Docker host and ships them to Loki with the `job="booking-system-containers"` label.
 
 ## Traces
 

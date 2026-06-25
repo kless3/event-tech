@@ -7,7 +7,7 @@ The service consumes booking lifecycle events from Kafka, creates notification r
 ## Key Features
 
 - Kafka consumers for payment success, payment failure, and event cancellation messages.
-- Idempotent processing through a processed-message table.
+- Idempotent processing through a processed-message MongoDB collection.
 - Notification records with channel, status, source event, delivery attempts, and failure reason.
 - Template service for consistent transactional messages.
 - Delivery abstraction for future email, SMS, or push integrations.
@@ -17,9 +17,9 @@ The service consumes booking lifecycle events from Kafka, creates notification r
 
 ## Kafka Topics
 
-- `ems.payment.succeeded`
-- `ems.payment.failed`
-- `ems.event.cancelled`
+- `booking.payment.succeeded`
+- `booking.payment.failed`
+- `booking.event.cancelled`
 
 Invalid or unexpected messages are sent to the configured dead-letter topic suffix.
 

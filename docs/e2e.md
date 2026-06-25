@@ -24,8 +24,8 @@ Optional overrides:
 ```bash
 export GATEWAY_URL=http://localhost:8083
 export KEYCLOAK_URL=http://localhost:8088
-export KEYCLOAK_REALM=ems
-export KEYCLOAK_CLIENT_ID=ems-api-gateway
+export KEYCLOAK_REALM=booking
+export KEYCLOAK_CLIENT_ID=booking-api-gateway
 export KEYCLOAK_ADMIN_USER=admin
 ```
 

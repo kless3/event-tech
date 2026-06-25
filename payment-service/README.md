@@ -56,9 +56,9 @@ Content-Type: application/json
 
 ## Kafka Events
 
-- `ems.payment.created`
-- `ems.payment.succeeded`
-- `ems.payment.failed`
+- `booking.payment.created`
+- `booking.payment.succeeded`
+- `booking.payment.failed`
 
 ## Package Layout
 

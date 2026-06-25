@@ -28,7 +28,7 @@ The UI aggregates OpenAPI specs from all backend services through gateway routes
 
 ## Auth
 
-The gateway validates Keycloak JWT access tokens from the `ems` realm, maps realm/client roles to Spring Security roles, and forwards trusted user context to downstream services with:
+The gateway validates Keycloak JWT access tokens from the `booking` realm, maps realm/client roles to Spring Security roles, and forwards trusted user context to downstream services with:
 
 - `X-Authenticated-User-Id`
 - `X-Authenticated-Username`
@@ -55,11 +55,11 @@ Get a local access token:
 
 ```bash
 curl -s \
-  -d "client_id=ems-api-gateway" \
+  -d "client_id=booking-api-gateway" \
   -d "username=<username>" \
   -d "password=<password>" \
   -d "grant_type=password" \
-  http://localhost:8088/realms/ems/protocol/openid-connect/token
+  http://localhost:8088/realms/booking/protocol/openid-connect/token
 ```
 
 Or use the helper from the repository root:

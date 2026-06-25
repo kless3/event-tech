@@ -21,7 +21,7 @@ The platform models the full booking lifecycle: organizers publish bookable inve
 
 ## Architecture
 
-![System design](docs/assets/system-design-excalidraw.svg)
+![Booking Platform system design](docs/assets/booking-platform-system-design.png)
 
 ## Services
 
