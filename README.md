@@ -37,6 +37,26 @@ The platform models the full booking lifecycle: organizers publish bookable inve
 
 Supporting infrastructure includes PostgreSQL, Kafka, Redis, Keycloak, LocalStack, Prometheus, Grafana, Loki, Tempo, and the OpenTelemetry Collector.
 
+## Local Ports
+
+| Component | Port | Purpose |
+| --- | --- | --- |
+| API Gateway | `8083` | Public HTTP API and Swagger UI |
+| User Service | `8080` | User and key-management API |
+| Ticket Service | `8081` | Booking and ticket API |
+| Event Service | `8082` | Bookable catalog API |
+| Payment Service | `8084` | Payment and receipt API |
+| Notification Service | `8085` | Notification lookup API |
+| Importer Service | `8086` | External catalog import API |
+| Keycloak | `8088` | Local identity provider |
+| Kafka | `19092` | External Kafka listener |
+| Redis | `6379` | Local cache |
+| LocalStack | `4566` | S3-compatible local storage |
+| Grafana | `3000` | Observability dashboards |
+| Prometheus | `9090` | Metrics and alerts |
+| Loki | `3100` | Log storage |
+| Tempo | `3200` | Trace storage |
+
 ## Distributed Flow
 
 The main booking flow is implemented with saga choreography. Services publish domain events through transactional outbox tables and consume Kafka messages idempotently, which keeps service-owned databases isolated while maintaining eventual consistency across ticket, payment, receipt, and notification workflows.
