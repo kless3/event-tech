@@ -17,29 +17,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ImporterService {
     private final ImportedEventRepository importedEventRepository;
     private final ExternalEventClientRegistry externalEventClientRegistry;
     private final EventServiceClient eventServiceClient;
     private final ExternalEventNormalizer externalEventNormalizer;
     private final ImportProperties importProperties;
-
-    public ImporterService(
-        ImportedEventRepository importedEventRepository,
-        ExternalEventClientRegistry externalEventClientRegistry,
-        EventServiceClient eventServiceClient,
-        ExternalEventNormalizer externalEventNormalizer,
-        ImportProperties importProperties
-    ) {
-        this.importedEventRepository = importedEventRepository;
-        this.externalEventClientRegistry = externalEventClientRegistry;
-        this.eventServiceClient = eventServiceClient;
-        this.externalEventNormalizer = externalEventNormalizer;
-        this.importProperties = importProperties;
-    }
+    private final ImportedEventMapper importedEventMapper;
 
     public ImportRunResponse importEvents(EventSource source, UUID organizerUserId, int limit) {
         ExternalEventClient client = externalEventClientRegistry.get(source);
@@ -64,7 +53,7 @@ public class ImporterService {
                 importedEvent.markFailed(exception.getMessage() == null ? "Import failed" : exception.getMessage());
                 failed++;
             }
-            records.add(ImportedEventMapper.toResponse(importedEventRepository.save(importedEvent)));
+            records.add(importedEventMapper.toResponse(importedEventRepository.save(importedEvent)));
         }
 
         return new ImportRunResponse(source, imported, skipped, failed, records);
@@ -72,13 +61,13 @@ public class ImporterService {
 
     public List<ImportedEventResponse> getImportedEvents(EventSource source) {
         return importedEventRepository.findAllBySourceOrderByCreatedAtDesc(source).stream()
-            .map(ImportedEventMapper::toResponse)
+            .map(importedEventMapper::toResponse)
             .toList();
     }
 
     public ImportedEventResponse getImportedEvent(UUID id) {
         return importedEventRepository.findById(id)
-            .map(ImportedEventMapper::toResponse)
+            .map(importedEventMapper::toResponse)
             .orElseThrow(() -> new ImportedEventNotFoundException(id));
     }
 

@@ -30,12 +30,14 @@ class ImporterServiceTest {
     private final ImportedEventRepository importedEventRepository = Mockito.mock(ImportedEventRepository.class);
     private final EventServiceClient eventServiceClient = Mockito.mock(EventServiceClient.class);
     private final ExternalEventClient externalEventClient = new TestExternalEventClient();
+    private final ImportedEventMapper importedEventMapper = new ImportedEventMapper();
     private final ImporterService importerService = new ImporterService(
         importedEventRepository,
         new ExternalEventClientRegistry(List.of(externalEventClient)),
         eventServiceClient,
         new ExternalEventNormalizer(),
-        importProperties()
+        importProperties(),
+        importedEventMapper
     );
 
     @Test
@@ -93,7 +95,8 @@ class ImporterServiceTest {
             new ExternalEventClientRegistry(List.of(flakyClient)),
             eventClient,
             new ExternalEventNormalizer(),
-            importProperties()
+            importProperties(),
+            importedEventMapper
         );
         UUID organizerUserId = UUID.randomUUID();
         when(repository.existsBySourceAndExternalId(EventSource.TICKETMASTER, "external-1")).thenReturn(false);

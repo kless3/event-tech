@@ -2,12 +2,11 @@ package com.ems.importerservice.service;
 
 import com.ems.importerservice.domain.ImportedEvent;
 import com.ems.importerservice.dto.ImportedEventResponse;
+import org.springframework.stereotype.Component;
 
-public final class ImportedEventMapper {
-    private ImportedEventMapper() {
-    }
-
-    public static ImportedEventResponse toResponse(ImportedEvent importedEvent) {
+@Component
+public class ImportedEventMapper {
+    public ImportedEventResponse toResponse(ImportedEvent importedEvent) {
         return new ImportedEventResponse(
             importedEvent.getId(),
             importedEvent.getSource(),

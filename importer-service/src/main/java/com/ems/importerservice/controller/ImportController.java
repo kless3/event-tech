@@ -9,6 +9,7 @@ import com.ems.importerservice.service.ImporterService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,12 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/imports")
+@RequiredArgsConstructor
 public class ImportController implements ImportApi {
     private final ImporterService importerService;
-
-    public ImportController(ImporterService importerService) {
-        this.importerService = importerService;
-    }
 
     @PostMapping("/{source}")
     @Override

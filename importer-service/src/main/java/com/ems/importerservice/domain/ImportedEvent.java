@@ -2,6 +2,9 @@ package com.ems.importerservice.domain;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,6 +18,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
     @CompoundIndex(name = "uk_imported_events_source_external_id", def = "{'source': 1, 'externalId': 1}", unique = true),
     @CompoundIndex(name = "idx_imported_events_status_created_at", def = "{'status': 1, 'createdAt': -1}")
 })
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImportedEvent {
     @Id
     private UUID id = UUID.randomUUID();
@@ -42,9 +47,6 @@ public class ImportedEvent {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    protected ImportedEvent() {
-    }
-
     public ImportedEvent(EventSource source, String externalId, String title) {
         this.source = source;
         this.externalId = externalId;
@@ -64,43 +66,4 @@ public class ImportedEvent {
         this.failureReason = reason.length() > 1024 ? reason.substring(0, 1024) : reason;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public EventSource getSource() {
-        return source;
-    }
-
-    public String getExternalId() {
-        return externalId;
-    }
-
-    public UUID getEventId() {
-        return eventId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public ImportStatus getStatus() {
-        return status;
-    }
-
-    public String getFailureReason() {
-        return failureReason;
-    }
-
-    public LocalDateTime getImportedAt() {
-        return importedAt;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
 }
